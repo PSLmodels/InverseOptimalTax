@@ -1,0 +1,19 @@
+name: iot-dev
+channels:
+- conda-forge
+dependencies:
+- python
+- "taxcalc>=3.2.0"
+- pandas
+- numpy
+- matplotlib
+- plotly.express
+- setuptools
+- pip
+- pytest
+- pytest-xdist
+- pycodestyle
+- pylint
+- coverage
+- pip:
+  - jupyter-book>=0.9.1
