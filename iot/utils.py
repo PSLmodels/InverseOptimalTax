@@ -1,7 +1,5 @@
-
-
 def wavg(group, avg_name, weight_name):
-    '''
+    """
     Computes weighted averages by group.
 
     Args:
@@ -11,7 +9,7 @@ def wavg(group, avg_name, weight_name):
 
     Returns:
         d (scalar): weighted avg for the group
-    '''
+    """
     d = group[avg_name]
     w = group[weight_name]
     try:

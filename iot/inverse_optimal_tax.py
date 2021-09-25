@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import scipy.stats as st
 from scipy.interpolate import UnivariateSpline
-from utils import wavg
+from iot.utils import wavg
 
 
 class IOT:
@@ -48,7 +48,8 @@ class IOT:
 
         # clean data based on upper and lower bounds
         data = data[
-            (data[income_measure] > lower_bound) & (data[income_measure] <= upper_bound)
+            (data[income_measure] > lower_bound)
+            & (data[income_measure] <= upper_bound)
         ]
         # create bins for analysis
         bins = np.arange(
@@ -59,7 +60,9 @@ class IOT:
         self.z, self.f, self.f_prime = self.compute_income_dist(
             data, income_measure, weight_var, dist_type
         )
-        self.mtr, self.mtr_prime = self.compute_mtr_dist(data, weight_var, mtr_smoother)
+        self.mtr, self.mtr_prime = self.compute_mtr_dist(
+            data, weight_var, mtr_smoother
+        )
         self.theta_z = 1 + ((self.z * self.f_prime) / self.f)
         self.g_z = self.sw_weights()
 
@@ -153,9 +156,9 @@ class IOT:
         z = data_group.values
 
         if dist_type == "log_normal":
-            mu = (np.log(data[income_measure]) * data[weight_var]).sum() / data[
-                weight_var
-            ].sum()
+            mu = (
+                np.log(data[income_measure]) * data[weight_var]
+            ).sum() / data[weight_var].sum()
             sigmasq = (
                 (((np.log(data[income_measure]) - mu) ** 2) * data[weight_var])
                 / data[weight_var].sum()
@@ -195,7 +198,10 @@ class IOT:
         g_z = (
             1
             + ((self.theta_z * self.inc_elast * self.mtr) / (1 - self.mtr))
-            + ((self.inc_elast * self.z * self.mtr_prime) / (1 - self.mtr) ** 2)
+            + (
+                (self.inc_elast * self.z * self.mtr_prime)
+                / (1 - self.mtr) ** 2
+            )
         )
 
         return g_z
