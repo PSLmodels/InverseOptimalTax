@@ -142,11 +142,13 @@ class IOT:
                 parametric, if None, then non-parametric bin weights
 
         Returns:
-            z (array_like): mean income at each bin in the income
-                distribution
+            tuple: z (array_like): mean income at each bin in the income
+            distribution
+
             f (array_like): density for income bin z
+
             f_prime (array_like): slope of the density function for
-                income bin z
+            income bin z
         """
         data_group = (
             data[[income_measure, "z_bin", weight_var]]
@@ -179,21 +181,21 @@ class IOT:
         return z, f, f_prime
 
     def sw_weights(self):
-        """
+        r"""
         Returns the social welfare weights for a given tax policy.
 
         See Jacobs, Jongen, and Zoutman (2017)
 
         .. math::
-        g_{z} = 1 + \theta_z \varepsilon^{c}\frac{T'(z)}{(1-T'(z))} +
+            g_{z} = 1 + \theta_z \varepsilon^{c}\frac{T'(z)}{(1-T'(z))} +
             \varepsilon^{c}\frac{zT''(z)}{(1-T''(z))^{2}}
 
         Args:
             None
 
         Returns:
-            g_z (array_like): vector of social welfare weights across
-                the income distribution
+            array_like: vector of social welfare weights across
+            the income distribution
         """
         g_z = (
             1
