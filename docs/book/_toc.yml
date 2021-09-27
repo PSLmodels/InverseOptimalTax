@@ -1,0 +1,6 @@
+format: jb-book
+root: content/intro/intro
+parts:
+- caption: InverseOptimalTax API
+  chapters:
+  - file: content/api/public_api

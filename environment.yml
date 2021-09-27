@@ -6,7 +6,7 @@ dependencies:
 - "taxcalc>=3.2.0"
 - pandas
 - numpy
-- matplotlib
+- scipy
 - plotly.express
 - setuptools
 - pip
@@ -17,3 +17,4 @@ dependencies:
 - coverage
 - pip:
   - jupyter-book>=0.9.1
+  - black
