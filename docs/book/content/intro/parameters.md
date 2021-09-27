@@ -1,4 +1,6 @@
-Equation 10 of Jacobs, Jongen, and Zoutman (*Journal of Public Economics*, 2017) summarizes the equation to determine the social welfare weights.  The social welfare weight on a taxpayer with income $z$ is:
+(Chap_Params)=
+# Parameters
+Equation 10 of {cite}JJZ:2017 summarizes the equation to determine the social welfare weights.  The social welfare weight on a taxpayer with income $z$ is:
 
 $$
 g_z = 1 + \theta_z \varepsilon^c \frac{T'(z)}{(1-T'(z))} + \varepsilon^c \frac{zT''(z)}{(1-T'(z))^2}
@@ -19,8 +21,8 @@ The parameters/functions that are necessary for computing these social welfare w
 
 Some notes:
 * To start, maybe take a "sufficient statistics" approach
-  * Keep elasticities, the income distribution, and employment constant (JJZ (2017), pg. 86)
-  * Otherwise, may need a lot more structure on the model  (see Hendren (2014) and Lockwood (2016)?)
+  * Keep elasticities, the income distribution, and employment constant ({cite}JJZ:2017, pg. 86)
+  * Otherwise, may need a lot more structure on the model  (see {cite}Hendren:2014 and {cite}LW:2016?)
   * Do we need to smooth out MTRs?
     * Maybe just some average effective rate for each point in the income distribution
 
