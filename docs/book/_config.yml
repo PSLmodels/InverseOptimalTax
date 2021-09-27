@@ -57,6 +57,6 @@ latex:
   latex_engine           : 'xelatex'
   latex_documents:
     targetname           : book.tex
-# bibtex_bibfiles:
-#   - XX.bib
+bibtex_bibfiles:
+  - IOT_references.bib
 
