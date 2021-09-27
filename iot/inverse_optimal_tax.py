@@ -201,6 +201,6 @@ class IOT:
             1
             + ((self.theta_z * self.inc_elast * self.mtr) / (1 - self.mtr))
             + ((self.inc_elast * self.z * self.mtr_prime) / (1 - self.mtr) ** 2)
-         )
+        )
 
         return g_z
