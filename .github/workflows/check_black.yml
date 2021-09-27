@@ -9,5 +9,5 @@ jobs:
       - uses: actions/checkout@v2
       - uses: psf/black@stable
         with:
-          options: "--l 79 --check --verbose"
+          options: "--line-length 79 --check --verbose"
           src: "."
