@@ -7,7 +7,6 @@ dependencies:
 - pandas
 - numpy
 - scipy
-- plotly-express
 - setuptools
 - pip
 - pytest
@@ -18,3 +17,4 @@ dependencies:
 - pip:
   - jupyter-book>=0.9.1
   - black
+  - plotly-express
