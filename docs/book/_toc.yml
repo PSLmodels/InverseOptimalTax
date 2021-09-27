@@ -1,6 +1,12 @@
 format: jb-book
 root: content/intro/intro
 parts:
+- caption: Model Parameters
+  chapters:
+  - file: content/intro/parameters
 - caption: InverseOptimalTax API
   chapters:
   - file: content/api/public_api
+- caption: References
+  chapters:
+  - file: content/references
