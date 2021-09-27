@@ -9,4 +9,4 @@ iot.inverse_optimal_tax
 --------------------------
 
 .. autoclass:: iot.inverse_optimal_tax.IOT
-  :members: df, compute_mtr_dist, compute_income_income_dist, sw_weights
+  :members: df, compute_mtr_dist, compute_income_dist, sw_weights
