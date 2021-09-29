@@ -1,6 +1,9 @@
 format: jb-book
 root: content/intro/intro
 parts:
+- caption: Contributing
+  chapters:
+  - file: content/intro/contributing
 - caption: Model Parameters
   chapters:
   - file: content/intro/parameters
