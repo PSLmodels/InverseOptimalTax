@@ -10,7 +10,7 @@ class IOT:
     Constructor for the IOT class.
 
     This IOT class can be used to compute the social welfare weights
-    across the income distribution given data, tax policy parametesr,
+    across the income distribution given data, tax policy parameters,
     and behavioral parameters.
 
     Args:
@@ -42,20 +42,20 @@ class IOT:
         bandwidth=1000,
         lower_bound=0,
         upper_bound=500000,
-        dist_type="log_normal",
+        dist_type="kde",
         mtr_smoother="cubic_spline",
     ):
 
         # clean data based on upper and lower bounds
         data = data[
-            (data[income_measure] > lower_bound)
+            (data[income_measure] >= lower_bound)
             & (data[income_measure] <= upper_bound)
         ]
         # create bins for analysis
         bins = np.arange(
             start=lower_bound, stop=upper_bound + bandwidth, step=bandwidth
         )
-        data["z_bin"] = pd.cut(data[income_measure], bins)
+        data["z_bin"] = pd.cut(data[income_measure], bins, include_lowest=True)
         self.inc_elast = inc_elast
         self.z, self.f, self.f_prime = self.compute_income_dist(
             data, income_measure, weight_var, dist_type
@@ -167,6 +167,9 @@ class IOT:
             ).sum()
             f = st.lognorm.pdf(z, s=(sigmasq) ** 0.5, scale=np.exp(mu))
             f = f / f.sum()
+        elif dist_type == "kde":
+            f_function = st.gaussian_kde(data[income_measure], weights=data[weight_var])
+            f = f_function(z)
         else:
             f = (
                 data[[weight_var, "z_bin"]].groupby("z_bin").sum()
