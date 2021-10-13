@@ -46,6 +46,8 @@ class IOT:
         mtr_smoother="cubic_spline",
     ):
 
+        # keep the original data intact
+        self.data_original = data
         # clean data based on upper and lower bounds
         data = data[
             (data[income_measure] >= lower_bound)
@@ -168,18 +170,19 @@ class IOT:
             f = st.lognorm.pdf(z, s=(sigmasq) ** 0.5, scale=np.exp(mu))
             f = f / f.sum()
         elif dist_type == "kde":
-            f_function = st.gaussian_kde(data[income_measure], weights=data[weight_var])
+            f_function = st.gaussian_kde(self.data_original[income_measure],
+            weights=self.data_original[weight_var])
             f = f_function(z)
         else:
             f = (
                 data[[weight_var, "z_bin"]].groupby("z_bin").sum()
                 / data[weight_var].sum()
-            ).s006.values
+            ).weight_var.values
 
         # Compute rate of change in pdf
         f_prime = np.diff(f) / np.diff(z)
-        # assume diff between last bin and next is zero
-        f_prime = np.append(f_prime, 0)
+        # assume diff between last bin and next is the same as before
+        f_prime = np.append(f_prime, f_prime[-1])
 
         return z, f, f_prime
 
