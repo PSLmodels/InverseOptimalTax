@@ -24,7 +24,7 @@ df = calc.dataframe(["s006", "expanded_income", "XTOT", "combined"])
 df["mtr"] = mtr1
 
 # %%
-iot1 = IOT(df, dist_type="kde", mtr_smoother="cubic_spline")
+iot1 = IOT(df, dist_type="kde_full", mtr_smoother="cubic_spline")
 
 df_out = iot1.df()
 

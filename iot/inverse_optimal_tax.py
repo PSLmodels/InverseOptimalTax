@@ -42,7 +42,7 @@ class IOT:
         bandwidth=1000,
         lower_bound=0,
         upper_bound=500000,
-        dist_type="kde",
+        dist_type="kde_full",
         mtr_smoother="cubic_spline",
     ):
 
@@ -169,15 +169,21 @@ class IOT:
             ).sum()
             f = st.lognorm.pdf(z, s=(sigmasq) ** 0.5, scale=np.exp(mu))
             f = f / f.sum()
-        elif dist_type == "kde":
+        elif dist_type == "kde_full":
+            # uses the original full data for kde estimation
             f_function = st.gaussian_kde(self.data_original[income_measure],
             weights=self.data_original[weight_var])
+            f = f_function(z)
+        elif dist_type == "kde_subset":
+            # uses the subsetted data for kde estimation
+            f_function = st.gaussian_kde(data[income_measure], 
+            weights=data[weight_var])
             f = f_function(z)
         else:
             f = (
                 data[[weight_var, "z_bin"]].groupby("z_bin").sum()
                 / data[weight_var].sum()
-            ).weight_var.values
+            )[weight_var].values
 
         # Compute rate of change in pdf
         f_prime = np.diff(f) / np.diff(z)
