@@ -2,7 +2,6 @@ import numpy as np
 import pandas as pd
 import scipy.stats as st
 from scipy.interpolate import UnivariateSpline
-from iot.utils import wavg
 
 
 class IOT:
@@ -112,7 +111,7 @@ class IOT:
         data_group = (
             data[["mtr", "z_bin", weight_var]]
             .groupby(["z_bin"])
-            .apply(wavg, "mtr", weight_var)
+            .apply(lambda x: np.average(x["mtr"], weights=x[weight_var]))
         )
         if mtr_smoother == "cubic_spline":
             spl = UnivariateSpline(self.z, data_group.values)
@@ -155,7 +154,8 @@ class IOT:
         data_group = (
             data[[income_measure, "z_bin", weight_var]]
             .groupby(["z_bin"])
-            .apply(wavg, income_measure, weight_var)
+            .apply(lambda x: np.average(x[income_measure], 
+                weights=x[weight_var]))
         )
         z = data_group.values
 
@@ -168,7 +168,6 @@ class IOT:
                 / data[weight_var].sum()
             ).sum()
             f = st.lognorm.pdf(z, s=(sigmasq) ** 0.5, scale=np.exp(mu))
-            f = f / f.sum()
         elif dist_type == "kde_full":
             # uses the original full data for kde estimation
             f_function = st.gaussian_kde(self.data_original[income_measure],
@@ -184,6 +183,7 @@ class IOT:
                 data[[weight_var, "z_bin"]].groupby("z_bin").sum()
                 / data[weight_var].sum()
             )[weight_var].values
+        f = f / np.sum(f)
 
         # Compute rate of change in pdf
         f_prime = np.diff(f) / np.diff(z)
