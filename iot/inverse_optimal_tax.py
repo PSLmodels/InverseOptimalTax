@@ -154,8 +154,9 @@ class IOT:
         data_group = (
             data[[income_measure, "z_bin", weight_var]]
             .groupby(["z_bin"])
-            .apply(lambda x: np.average(x[income_measure],
-                weights=x[weight_var]))
+            .apply(
+                lambda x: np.average(x[income_measure], weights=x[weight_var])
+            )
         )
         z = data_group.values
 
@@ -170,13 +171,16 @@ class IOT:
             f = st.lognorm.pdf(z, s=(sigmasq) ** 0.5, scale=np.exp(mu))
         elif dist_type == "kde_full":
             # uses the original full data for kde estimation
-            f_function = st.gaussian_kde(self.data_original[income_measure],
-            weights=self.data_original[weight_var])
+            f_function = st.gaussian_kde(
+                self.data_original[income_measure],
+                weights=self.data_original[weight_var],
+            )
             f = f_function(z)
         elif dist_type == "kde_subset":
             # uses the subsetted data for kde estimation
-            f_function = st.gaussian_kde(data[income_measure],
-            weights=data[weight_var])
+            f_function = st.gaussian_kde(
+                data[income_measure], weights=data[weight_var]
+            )
             f = f_function(z)
         else:
             f = (

@@ -8,12 +8,12 @@ import plotly.express as px
 # %%
 class iot_comparison:
     """
-    Uses gen_microdata to generate tax data for each policy and 
-    uses IOT to generate class instances which can be used 
+    Uses gen_microdata to generate tax data for each policy and
+    uses IOT to generate class instances which can be used
     to compare different tax policies for social welfare analysis
 
-    Args: 
-        year (int): year for analysis, see 
+    Args:
+        year (int): year for analysis, see
             taxcalc.Calculator.advance_to_year
         policies (list): list of dicts or json files denoting policy
             parameter changes
@@ -34,12 +34,13 @@ class iot_comparison:
         mtr_smoother (None or str): method used to smooth our mtr
             function, if None, then use bin average mtrs
     """
+
     def __init__(
         self,
         year=2022,
         policies=[],
         labels=[],
-        data='CPS',
+        data="CPS",
         compare_default=True,
         income_measure="expanded_income",
         weight_var="s006",
@@ -52,31 +53,37 @@ class iot_comparison:
     ):
         df = []
         self.iot = []
-        # inititalize list of dataframes and 
+        # inititalize list of dataframes and
         # IOT class objects for each polciy
         self.labels = labels
 
         for v in policies:
-            df.append(gen_microdata(year=year, data=data,
-            reform=v))
+            df.append(gen_microdata(year=year, data=data, reform=v))
         # creates dataframes for each policy given as argument
         if compare_default:
             df.append(gen_microdata(year=year))
-            self.labels.append('Default Policy')
+            self.labels.append("Default Policy")
             # adds the defaults to the list
         for j in df:
-            self.iot.append(IOT(j, income_measure=income_measure,
-            weight_var=weight_var, inc_elast=inc_elast, 
-            bandwidth=bandwidth, lower_bound=lower_bound, 
-            upper_bound=upper_bound, dist_type=dist_type,
-            mtr_smoother=mtr_smoother
-            ))
+            self.iot.append(
+                IOT(
+                    j,
+                    income_measure=income_measure,
+                    weight_var=weight_var,
+                    inc_elast=inc_elast,
+                    bandwidth=bandwidth,
+                    lower_bound=lower_bound,
+                    upper_bound=upper_bound,
+                    dist_type=dist_type,
+                    mtr_smoother=mtr_smoother,
+                )
+            )
 
-    def plot(self, var='g_z'):
-        '''
+    def plot(self, var="g_z"):
+        """
         Used to plot the attributes of the IOT class objects
-        for each policy. 
-        Args: 
+        for each policy.
+        Args:
             var (str): variable to plot against income
             Variable options are:
                 'f' for distribution of income
@@ -85,15 +92,17 @@ class iot_comparison:
                 'mtr_prime' for derivative of marginal tax rate
                 'theta_z' for elasticity of the tax base
                 'g_z' for social welfare weights
-            Note: f, f_prime, and theta_z are common between all policies, 
+            Note: f, f_prime, and theta_z are common between all policies,
             and therefore are not comparative.
-        
-        Returns: 
+
+        Returns:
             fig (plotly.express figure)
-        '''
-        if var in ['f', 'f_prime', 'theta_z']:
+        """
+        if var in ["f", "f_prime", "theta_z"]:
             fig = px.line(x=self.iot[0].df().z, y=self.iot[0].df()[var])
-            fig.data[0].hovertemplate='z=%{x}<br>'+var+'=%{y}<extra></extra>'
+            fig.data[0].hovertemplate = (
+                "z=%{x}<br>" + var + "=%{y}<extra></extra>"
+            )
         else:
             y = []
             for i in self.iot:
@@ -101,11 +110,16 @@ class iot_comparison:
             fig = px.line(x=self.iot[0].df().z, y=y)
             for j in range(len(self.labels)):
                 fig.data[j].name = self.labels[j]
-                fig.data[j].hovertemplate='Policy='+self.labels[j]+'<br>z=%{x}<br>'+var+'=%{y}<extra></extra>'
-            fig.update_layout(legend_title='Policy')
+                fig.data[j].hovertemplate = (
+                    "Policy="
+                    + self.labels[j]
+                    + "<br>z=%{x}<br>"
+                    + var
+                    + "=%{y}<extra></extra>"
+                )
+            fig.update_layout(legend_title="Policy")
         fig.update_layout(
-            xaxis_title = 'z',
-            yaxis_title = var,
+            xaxis_title="z",
+            yaxis_title=var,
         )
         return fig
-
