@@ -2,7 +2,14 @@ import taxcalc as tc
 import pandas as pd
 
 
-def gen_microdata(year=2022, data="CPS", reform={}, mtr_wrt="e00200p", income_measure="expanded_income", weight_var="s006"):
+def gen_microdata(
+    year=2022,
+    data="CPS",
+    reform={},
+    mtr_wrt="e00200p",
+    income_measure="expanded_income",
+    weight_var="s006",
+):
     """
     Uses taxcalc to generate microdata used for social welfare analysis.
 

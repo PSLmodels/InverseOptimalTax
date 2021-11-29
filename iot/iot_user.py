@@ -43,7 +43,7 @@ class iot_comparison:
         labels=[],
         data="CPS",
         compare_default=True,
-        mtr_wrt="e00200p"
+        mtr_wrt="e00200p",
         income_measure="expanded_income",
         weight_var="s006",
         inc_elast=0.25,
@@ -63,7 +63,14 @@ class iot_comparison:
             df.append(gen_microdata(year=year, data=data, reform=v))
         # creates dataframes for each policy given as argument
         if compare_default:
-            df.append(gen_microdata(year=year, mtr_wrt=mtr_wrt, income_measure=income_measure, weight_var=weight_var))
+            df.append(
+                gen_microdata(
+                    year=year,
+                    mtr_wrt=mtr_wrt,
+                    income_measure=income_measure,
+                    weight_var=weight_var,
+                )
+            )
             self.labels.append("Default Policy")
             # adds the defaults to the list
         for j in df:
