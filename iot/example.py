@@ -1,48 +1,31 @@
 # %%
-import taxcalc
-from inverse_optimal_tax import IOT
-import plotly.io as pio
-import plotly.express as px
-
-pio.templates.default = "plotly_white"
-
+from iot_user import iot_comparison
 
 # %%
-pol = taxcalc.policy.Policy()
-rec = taxcalc.records.Records.cps_constructor()
-calc = taxcalc.calculator.Calculator(policy=pol, records=rec)
+iot1 = iot_comparison(policies=
+['https://raw.githubusercontent.com/PSLmodels/examples/main/psl_examples/taxcalc/2017_law.json',
+'https://raw.githubusercontent.com/PSLmodels/examples/main/psl_examples/taxcalc/Biden2020.json'],
+labels=['2017 Law', 'Biden 2020'])
+
+iot2 = iot_comparison(policies=
+['https://raw.githubusercontent.com/PSLmodels/examples/main/psl_examples/taxcalc/2017_law.json',
+'https://raw.githubusercontent.com/PSLmodels/examples/main/psl_examples/taxcalc/Biden2020.json'],
+labels=['2017 Law', 'Biden 2020'],
+inc_elast=2)
 
 # %%
-calc.advance_to_year(2022)
-calc.calc_all()
+iot1.iot[-1].df().head()
 
 # %%
-df = calc.dataframe(["s006", "expanded_income", "XTOT", "combined"])
-(_, _, mtr1) = calc.mtr(
-    "e00200p", calc_all_already_called=True, wrt_full_compensation=False
-)
-df["mtr"] = mtr1
+gzplot1 = iot1.plot()
+gzplot2 = iot2.plot()
+fplot = iot1.plot(var='f')
+mtrplot1 = iot1.plot(var='mtr')
+thetaplot1 = iot1.plot(var='theta_z')
 
 # %%
-iot1 = IOT(df, lower_bound=1, dist_type='log_normal', mtr_smoother="cubic_spline")
-
-df_out = iot1.df()
-
-# plot
-fig = px.line(df_out, x="z", y="g_z")
-fig.show()
-
-fig = px.line(df_out, x="z", y="mtr")
-fig.show()
-
-fig = px.line(df_out, x="z", y="theta_z")
-fig.show()
-
-fig = px.line(df_out, x="z", y="f")
-fig.show()
-
-fig = px.line(df_out, x="z", y="f_prime")
-fig.show()
-# %%
-fig = px.line(df_out, x="z", y="mtr_prime")
-fig.show()
+fplot.show()
+mtrplot1.show()
+thetaplot1.show()
+gzplot1.show()
+gzplot2.show()
