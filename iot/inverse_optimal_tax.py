@@ -18,7 +18,7 @@ class IOT:
             weight_var, mtr
         income_measure (str): name of income measure from data to use
         weight_var (str): name of weight measure from data to use
-        inc_elast (scalar): compensated elasiticy of taxable income
+        inc_elast (scalar): compensated elasticity of taxable income
             w.r.t. the marginal tax rate
         bandwidth (scalar): size of income bins in units of income
         lower_bound (scalar): minimum income to consider
@@ -144,12 +144,10 @@ class IOT:
 
         Returns:
             tuple: z (array_like): mean income at each bin in the income
-            distribution
-
+                distribution
             f (array_like): density for income bin z
-
             f_prime (array_like): slope of the density function for
-            income bin z
+                income bin z
         """
         data_group = (
             data[[income_measure, "z_bin", weight_var]]

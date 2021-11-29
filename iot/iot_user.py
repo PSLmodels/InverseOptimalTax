@@ -22,9 +22,10 @@ class iot_comparison:
             for IRS Public Use File (must have 'puf.csv' in cd)
         compare_default(boolean): True to include default policy
             False to not include default policy
+        mtr_wtr (str): name of income source to compute MTR on
         income_measure (str): name of income measure from data to use
         weight_var (str): name of weight measure from data to use
-        inc_elast (scalar): compensated elasiticy of taxable income
+        inc_elast (scalar): compensated elasticity of taxable income
             w.r.t. the marginal tax rate
         bandwidth (scalar): size of income bins in units of income
         lower_bound (scalar): minimum income to consider
@@ -42,6 +43,7 @@ class iot_comparison:
         labels=[],
         data="CPS",
         compare_default=True,
+        mtr_wrt="e00200p"
         income_measure="expanded_income",
         weight_var="s006",
         inc_elast=0.25,
@@ -61,7 +63,7 @@ class iot_comparison:
             df.append(gen_microdata(year=year, data=data, reform=v))
         # creates dataframes for each policy given as argument
         if compare_default:
-            df.append(gen_microdata(year=year))
+            df.append(gen_microdata(year=year, mtr_wrt=mtr_wrt, income_measure=income_measure, weight_var=weight_var))
             self.labels.append("Default Policy")
             # adds the defaults to the list
         for j in df:
@@ -85,15 +87,17 @@ class iot_comparison:
         for each policy.
         Args:
             var (str): variable to plot against income
-            Variable options are:
-                'f' for distribution of income
-                'f_prime' for approximate derivative of income distribution
-                'mtr' for marginal tax rates
-                'mtr_prime' for derivative of marginal tax rate
-                'theta_z' for elasticity of the tax base
-                'g_z' for social welfare weights
-            Note: f, f_prime, and theta_z are common between all policies,
-            and therefore are not comparative.
+                Variable options are:
+                 * 'f' for distribution of income
+                 * 'f_prime' for approximate derivative of income distribution
+                 * 'mtr' for marginal tax rates
+                 * 'mtr_prime' for derivative of marginal tax rate
+                 * 'theta_z' for elasticity of the tax base
+                 * 'g_z' for social welfare weights
+
+        Note:
+            `f`, `f_prime`, and `theta_z` are common between all
+                policies, and therefore are not comparative.
 
         Returns:
             fig (plotly.express figure)
