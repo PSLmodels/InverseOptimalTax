@@ -1,5 +1,4 @@
 import taxcalc as tc
-import pandas as pd
 
 
 def gen_microdata(
