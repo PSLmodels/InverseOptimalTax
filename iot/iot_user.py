@@ -1,6 +1,7 @@
 # %%
 from iot.inverse_optimal_tax import IOT
 from iot.generate_data import gen_microdata
+
 # import plotly.io as pio
 import plotly.express as px
 
@@ -114,9 +115,7 @@ class iot_comparison:
         """
         if var in ["f", "f_prime", "theta_z"]:
             fig = px.line(x=self.iot[0].df().z, y=self.iot[0].df()[var])
-            fig.data[0].hovertemplate = (
-                "z=%{x}<br>" + var + "=%{y}<extra></extra>"
-            )
+            fig.data[0].hovertemplate = "z=%{x}<br>" + var + "=%{y}<extra></extra>"
         else:
             y = []
             for i in self.iot:
