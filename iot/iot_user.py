@@ -34,6 +34,9 @@ class iot_comparison:
             parametric, if None, then non-parametric bin weights
         mtr_smoother (None or str): method used to smooth our mtr
             function, if None, then use bin average mtrs
+
+    Returns:
+        iot_comparison class instance
     """
 
     def __init__(

@@ -46,7 +46,7 @@ class IOT:
     ):
 
         # keep the original data intact
-        self.data_original = data
+        self.data_original = data.copy()
         # clean data based on upper and lower bounds
         data = data[
             (data[income_measure] >= lower_bound)
@@ -104,9 +104,10 @@ class IOT:
             function, if None, then use bin average mtrs
 
         Returns:
-            mtr (array_like): mean marginal tax rate for each income bin
-            mtr_prime (array_like): rate of change in marginal tax rates
-                for each income bin
+            tuple:
+                * mtr (array_like): mean marginal tax rate for each income bin
+                * mtr_prime (array_like): rate of change in marginal tax rates
+                    for each income bin
         """
         data_group = (
             data[["mtr", "z_bin", weight_var]]
@@ -143,11 +144,12 @@ class IOT:
                 parametric, if None, then non-parametric bin weights
 
         Returns:
-            tuple: z (array_like): mean income at each bin in the income
-                distribution
-            f (array_like): density for income bin z
-            f_prime (array_like): slope of the density function for
-                income bin z
+            tuple:
+                * z (array_like): mean income at each bin in the income
+                    distribution
+                * f (array_like): density for income bin z
+                * f_prime (array_like): slope of the density function for
+                    income bin z
         """
         data_group = (
             data[[income_measure, "z_bin", weight_var]]
