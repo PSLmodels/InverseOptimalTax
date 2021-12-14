@@ -53,7 +53,7 @@
     <script async="async" src="../../_static/sphinx-thebe.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="Inverse Optimal Tax Utilities" href="utils.html" />
+    <link rel="next" title="References" href="../references.html" />
     <link rel="prev" title="API" href="public_api.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="docsearch:language" content="None">
@@ -95,6 +95,30 @@
 </ul>
 <p aria-level="2" class="caption" role="heading">
  <span class="caption-text">
+  Example Usage
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../example/IOT_example.html">
+   Inverse Optimal Tax Example
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  Contributing
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../intro/contributing.html">
+   Contributor Guide
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
   Model Parameters
  </span>
 </p>
@@ -124,11 +148,6 @@
    <li class="toctree-l2 current active">
     <a class="current reference internal" href="#">
      Inverse Optimal Tax Class Object
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="utils.html">
-     Inverse Optimal Tax Utilities
     </a>
    </li>
   </ul>
@@ -268,7 +287,7 @@ Must include the following columns: income_measure,
 weight_var, mtr</p></li>
 <li><p><strong>income_measure</strong> (<em>str</em>) – name of income measure from data to use</p></li>
 <li><p><strong>weight_var</strong> (<em>str</em>) – name of weight measure from data to use</p></li>
-<li><p><strong>inc_elast</strong> (<em>scalar</em>) – compensated elasiticy of taxable income
+<li><p><strong>inc_elast</strong> (<em>scalar</em>) – compensated elasticity of taxable income
 w.r.t. the marginal tax rate</p></li>
 <li><p><strong>bandwidth</strong> (<em>scalar</em>) – size of income bins in units of income</p></li>
 <li><p><strong>lower_bound</strong> (<em>scalar</em>) – minimum income to consider</p></li>
@@ -307,11 +326,19 @@ parametric, if None, then non-parametric bin weights</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p><p>z (array_like): mean income at each bin in the income
-distribution</p>
-<p>f (array_like): density for income bin z</p>
-<p>f_prime (array_like): slope of the density function for
-income bin z</p>
+<dd class="field-even"><p><ul class="simple">
+<li><dl class="simple">
+<dt>z (array_like): mean income at each bin in the income</dt><dd><p>distribution</p>
+</dd>
+</dl>
+</li>
+<li><p>f (array_like): density for income bin z</p></li>
+<li><dl class="simple">
+<dt>f_prime (array_like): slope of the density function for</dt><dd><p>income bin z</p>
+</dd>
+</dl>
+</li>
+</ul>
 </p>
 </dd>
 <dt class="field-odd">Return type</dt>
@@ -339,15 +366,18 @@ weight_var, mtr</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p><p>mean marginal tax rate for each income bin
-mtr_prime (array_like): rate of change in marginal tax rates</p>
-<blockquote>
-<div><p>for each income bin</p>
-</div></blockquote>
+<dd class="field-even"><p><ul class="simple">
+<li><p>mtr (array_like): mean marginal tax rate for each income bin</p></li>
+<li><dl class="simple">
+<dt>mtr_prime (array_like): rate of change in marginal tax rates</dt><dd><p>for each income bin</p>
+</dd>
+</dl>
+</li>
+</ul>
 </p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>mtr (array_like)</p>
+<dd class="field-odd"><p>tuple</p>
 </dd>
 </dl>
 </dd></dl>
@@ -432,10 +462,10 @@ the income distribution</p>
             <p class="prev-next-title">API</p>
         </div>
     </a>
-    <a class='right-next' id="next-link" href="utils.html" title="next page">
+    <a class='right-next' id="next-link" href="../references.html" title="next page">
     <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Inverse Optimal Tax Utilities</p>
+        <p class="prev-next-title">References</p>
     </div>
     <i class="fas fa-angle-right"></i>
     </a>

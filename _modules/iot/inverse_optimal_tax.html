@@ -84,6 +84,30 @@
 </ul>
 <p aria-level="2" class="caption" role="heading">
  <span class="caption-text">
+  Example Usage
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../content/example/IOT_example.html">
+   Inverse Optimal Tax Example
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  Contributing
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../content/intro/contributing.html">
+   Contributor Guide
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
   Model Parameters
  </span>
 </p>
@@ -113,11 +137,6 @@
    <li class="toctree-l2">
     <a class="reference internal" href="../../content/api/inverse_optimal_tax.html">
      Inverse Optimal Tax Class Object
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../content/api/utils.html">
-     Inverse Optimal Tax Utilities
     </a>
    </li>
   </ul>
@@ -228,7 +247,7 @@
 <span class="sd">            weight_var, mtr</span>
 <span class="sd">        income_measure (str): name of income measure from data to use</span>
 <span class="sd">        weight_var (str): name of weight measure from data to use</span>
-<span class="sd">        inc_elast (scalar): compensated elasiticy of taxable income</span>
+<span class="sd">        inc_elast (scalar): compensated elasticity of taxable income</span>
 <span class="sd">            w.r.t. the marginal tax rate</span>
 <span class="sd">        bandwidth (scalar): size of income bins in units of income</span>
 <span class="sd">        lower_bound (scalar): minimum income to consider</span>
@@ -256,7 +275,7 @@
     <span class="p">):</span>
 
         <span class="c1"># keep the original data intact</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">data_original</span> <span class="o">=</span> <span class="n">data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_original</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="c1"># clean data based on upper and lower bounds</span>
         <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span>
             <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">income_measure</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">lower_bound</span><span class="p">)</span>
@@ -314,9 +333,10 @@
 <span class="sd">            function, if None, then use bin average mtrs</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            mtr (array_like): mean marginal tax rate for each income bin</span>
-<span class="sd">            mtr_prime (array_like): rate of change in marginal tax rates</span>
-<span class="sd">                for each income bin</span>
+<span class="sd">            tuple:</span>
+<span class="sd">                * mtr (array_like): mean marginal tax rate for each income bin</span>
+<span class="sd">                * mtr_prime (array_like): rate of change in marginal tax rates</span>
+<span class="sd">                    for each income bin</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">data_group</span> <span class="o">=</span> <span class="p">(</span>
             <span class="n">data</span><span class="p">[[</span><span class="s2">&quot;mtr&quot;</span><span class="p">,</span> <span class="s2">&quot;z_bin&quot;</span><span class="p">,</span> <span class="n">weight_var</span><span class="p">]]</span>
@@ -353,19 +373,19 @@
 <span class="sd">                parametric, if None, then non-parametric bin weights</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            tuple: z (array_like): mean income at each bin in the income</span>
-<span class="sd">            distribution</span>
-
-<span class="sd">            f (array_like): density for income bin z</span>
-
-<span class="sd">            f_prime (array_like): slope of the density function for</span>
-<span class="sd">            income bin z</span>
+<span class="sd">            tuple:</span>
+<span class="sd">                * z (array_like): mean income at each bin in the income</span>
+<span class="sd">                    distribution</span>
+<span class="sd">                * f (array_like): density for income bin z</span>
+<span class="sd">                * f_prime (array_like): slope of the density function for</span>
+<span class="sd">                    income bin z</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">data_group</span> <span class="o">=</span> <span class="p">(</span>
             <span class="n">data</span><span class="p">[[</span><span class="n">income_measure</span><span class="p">,</span> <span class="s2">&quot;z_bin&quot;</span><span class="p">,</span> <span class="n">weight_var</span><span class="p">]]</span>
             <span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s2">&quot;z_bin&quot;</span><span class="p">])</span>
-            <span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">average</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">income_measure</span><span class="p">],</span> 
-                <span class="n">weights</span><span class="o">=</span><span class="n">x</span><span class="p">[</span><span class="n">weight_var</span><span class="p">]))</span>
+            <span class="o">.</span><span class="n">apply</span><span class="p">(</span>
+                <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">average</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">income_measure</span><span class="p">],</span> <span class="n">weights</span><span class="o">=</span><span class="n">x</span><span class="p">[</span><span class="n">weight_var</span><span class="p">])</span>
+            <span class="p">)</span>
         <span class="p">)</span>
         <span class="n">z</span> <span class="o">=</span> <span class="n">data_group</span><span class="o">.</span><span class="n">values</span>
 
@@ -380,13 +400,16 @@
             <span class="n">f</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">lognorm</span><span class="o">.</span><span class="n">pdf</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="p">(</span><span class="n">sigmasq</span><span class="p">)</span> <span class="o">**</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">mu</span><span class="p">))</span>
         <span class="k">elif</span> <span class="n">dist_type</span> <span class="o">==</span> <span class="s2">&quot;kde_full&quot;</span><span class="p">:</span>
             <span class="c1"># uses the original full data for kde estimation</span>
-            <span class="n">f_function</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">gaussian_kde</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_original</span><span class="p">[</span><span class="n">income_measure</span><span class="p">],</span>
-            <span class="n">weights</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">data_original</span><span class="p">[</span><span class="n">weight_var</span><span class="p">])</span>
+            <span class="n">f_function</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">gaussian_kde</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">data_original</span><span class="p">[</span><span class="n">income_measure</span><span class="p">],</span>
+                <span class="n">weights</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">data_original</span><span class="p">[</span><span class="n">weight_var</span><span class="p">],</span>
+            <span class="p">)</span>
             <span class="n">f</span> <span class="o">=</span> <span class="n">f_function</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">dist_type</span> <span class="o">==</span> <span class="s2">&quot;kde_subset&quot;</span><span class="p">:</span>
             <span class="c1"># uses the subsetted data for kde estimation</span>
-            <span class="n">f_function</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">gaussian_kde</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">income_measure</span><span class="p">],</span> 
-            <span class="n">weights</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="n">weight_var</span><span class="p">])</span>
+            <span class="n">f_function</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">gaussian_kde</span><span class="p">(</span>
+                <span class="n">data</span><span class="p">[</span><span class="n">income_measure</span><span class="p">],</span> <span class="n">weights</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="n">weight_var</span><span class="p">]</span>
+            <span class="p">)</span>
             <span class="n">f</span> <span class="o">=</span> <span class="n">f_function</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">f</span> <span class="o">=</span> <span class="p">(</span>
