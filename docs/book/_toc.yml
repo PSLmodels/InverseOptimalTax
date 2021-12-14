@@ -1,6 +1,12 @@
 format: jb-book
 root: content/intro/intro
 parts:
+- caption: Example Usage
+  chapters:
+  - file: content/example/IOT_example.ipynb
+- caption: Contributing
+  chapters:
+  - file: content/intro/contributing
 - caption: Model Parameters
   chapters:
   - file: content/intro/parameters

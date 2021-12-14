@@ -18,7 +18,7 @@ class IOT:
             weight_var, mtr
         income_measure (str): name of income measure from data to use
         weight_var (str): name of weight measure from data to use
-        inc_elast (scalar): compensated elasiticy of taxable income
+        inc_elast (scalar): compensated elasticity of taxable income
             w.r.t. the marginal tax rate
         bandwidth (scalar): size of income bins in units of income
         lower_bound (scalar): minimum income to consider
@@ -46,7 +46,7 @@ class IOT:
     ):
 
         # keep the original data intact
-        self.data_original = data
+        self.data_original = data.copy()
         # clean data based on upper and lower bounds
         data = data[
             (data[income_measure] >= lower_bound)
@@ -104,9 +104,10 @@ class IOT:
             function, if None, then use bin average mtrs
 
         Returns:
-            mtr (array_like): mean marginal tax rate for each income bin
-            mtr_prime (array_like): rate of change in marginal tax rates
-                for each income bin
+            tuple:
+                * mtr (array_like): mean marginal tax rate for each income bin
+                * mtr_prime (array_like): rate of change in marginal tax rates
+                    for each income bin
         """
         data_group = (
             data[["mtr", "z_bin", weight_var]]
@@ -143,19 +144,19 @@ class IOT:
                 parametric, if None, then non-parametric bin weights
 
         Returns:
-            tuple: z (array_like): mean income at each bin in the income
-            distribution
-
-            f (array_like): density for income bin z
-
-            f_prime (array_like): slope of the density function for
-            income bin z
+            tuple:
+                * z (array_like): mean income at each bin in the income
+                    distribution
+                * f (array_like): density for income bin z
+                * f_prime (array_like): slope of the density function for
+                    income bin z
         """
         data_group = (
             data[[income_measure, "z_bin", weight_var]]
             .groupby(["z_bin"])
-            .apply(lambda x: np.average(x[income_measure], 
-                weights=x[weight_var]))
+            .apply(
+                lambda x: np.average(x[income_measure], weights=x[weight_var])
+            )
         )
         z = data_group.values
 
@@ -170,13 +171,16 @@ class IOT:
             f = st.lognorm.pdf(z, s=(sigmasq) ** 0.5, scale=np.exp(mu))
         elif dist_type == "kde_full":
             # uses the original full data for kde estimation
-            f_function = st.gaussian_kde(self.data_original[income_measure],
-            weights=self.data_original[weight_var])
+            f_function = st.gaussian_kde(
+                self.data_original[income_measure],
+                weights=self.data_original[weight_var],
+            )
             f = f_function(z)
         elif dist_type == "kde_subset":
             # uses the subsetted data for kde estimation
-            f_function = st.gaussian_kde(data[income_measure], 
-            weights=data[weight_var])
+            f_function = st.gaussian_kde(
+                data[income_measure], weights=data[weight_var]
+            )
             f = f_function(z)
         else:
             f = (
