@@ -1,7 +1,7 @@
 # %%
-from inverse_optimal_tax import IOT
-from generate_data import gen_microdata
-import plotly.io as pio
+from iot.inverse_optimal_tax import IOT
+from iot.generate_data import gen_microdata
+# import plotly.io as pio
 import plotly.express as px
 
 
@@ -71,7 +71,7 @@ class iot_comparison:
                     weight_var=weight_var,
                 )
             )
-            self.labels.append("Default Policy")
+            self.labels.append("Current Law")
             # adds the defaults to the list
         for j in df:
             self.iot.append(
@@ -130,7 +130,7 @@ class iot_comparison:
                 )
             fig.update_layout(legend_title="Policy")
         fig.update_layout(
-            xaxis_title="z",
+            xaxis_title=r"$z$",
             yaxis_title=var,
         )
         return fig
