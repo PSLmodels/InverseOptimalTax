@@ -8,7 +8,8 @@ copyright                : '2021'
 ####################################################
 # Execution settings
 execute:
-  execute_notebooks      : cache
+  # execute_notebooks      : cache
+  timeout: -1
 
 ####################################################
 # HTML-specific settings
@@ -32,6 +33,7 @@ binder:
   text                   : 'Launch binder'
 
 launch_buttons:
+  colab_url: "https://colab.research.google.com"
   notebook_interface     : 'classic'  # The interface interactive links will activate ["classic", "jupyterlab"]
   # binderhub_url          : https://mybinder.org  # The URL of the BinderHub (e.g., https://mybinder.org)
   # jupyterhub_url         : ""  # The URL of the JupyterHub (e.g., https://datahub.berkeley.edu)
