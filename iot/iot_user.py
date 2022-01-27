@@ -64,12 +64,22 @@ class iot_comparison:
         self.labels = labels
 
         for v in policies:
-            df.append(gen_microdata(year=year, data=data, reform=v))
+            df.append(
+                gen_microdata(
+                    year=year,
+                    data=data,
+                    reform=v,
+                    mtr_wrt=mtr_wrt,
+                    income_measure=income_measure,
+                    weight_var=weight_var,
+                )
+            )
         # creates dataframes for each policy given as argument
         if compare_default:
             df.append(
                 gen_microdata(
                     year=year,
+                    data=data,
                     mtr_wrt=mtr_wrt,
                     income_measure=income_measure,
                     weight_var=weight_var,
@@ -115,9 +125,7 @@ class iot_comparison:
         """
         if var in ["f", "f_prime", "theta_z"]:
             fig = px.line(x=self.iot[0].df().z, y=self.iot[0].df()[var])
-            fig.data[0].hovertemplate = (
-                "z=%{x}<br>" + var + "=%{y}<extra></extra>"
-            )
+            fig.data[0].hovertemplate = "z=%{x}<br>" + var + "=%{y}<extra></extra>"
         else:
             y = []
             for i in self.iot:
