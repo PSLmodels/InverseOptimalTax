@@ -55,6 +55,7 @@ class iot_comparison:
         lower_bound=0,
         upper_bound=500000,
         dist_type="kde_full",
+        kde_bw=None,
         mtr_smoother="cubic_spline",
     ):
         df = []
@@ -88,6 +89,7 @@ class iot_comparison:
                     lower_bound=lower_bound,
                     upper_bound=upper_bound,
                     dist_type=dist_type,
+                    kde_bw=kde_bw,
                     mtr_smoother=mtr_smoother,
                 )
             )
@@ -123,11 +125,11 @@ class iot_comparison:
             for i in self.iot:
                 y.append(i.df()[var])
             fig = px.line(x=self.iot[0].df().z, y=y)
-            for j in range(len(self.labels)):
-                fig.data[j].name = self.labels[j]
-                fig.data[j].hovertemplate = (
+            for j in enumerate(self.labels):
+                fig.data[j[0]].name = j[1]
+                fig.data[j[0]].hovertemplate = (
                     "Policy="
-                    + self.labels[j]
+                    + j[1]
                     + "<br>z=%{x}<br>"
                     + var
                     + "=%{y}<extra></extra>"
@@ -138,3 +140,4 @@ class iot_comparison:
             yaxis_title=var,
         )
         return fig
+

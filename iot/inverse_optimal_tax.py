@@ -42,6 +42,7 @@ class IOT:
         lower_bound=0,
         upper_bound=500000,
         dist_type="kde_full",
+        kde_bw=None,
         mtr_smoother="cubic_spline",
     ):
 
@@ -59,7 +60,7 @@ class IOT:
         data["z_bin"] = pd.cut(data[income_measure], bins, include_lowest=True)
         self.inc_elast = inc_elast
         self.z, self.f, self.f_prime = self.compute_income_dist(
-            data, income_measure, weight_var, dist_type
+            data, income_measure, weight_var, dist_type, kde_bw
         )
         self.mtr, self.mtr_prime = self.compute_mtr_dist(
             data, weight_var, mtr_smoother
@@ -125,7 +126,8 @@ class IOT:
 
         return mtr, mtr_prime
 
-    def compute_income_dist(self, data, income_measure, weight_var, dist_type):
+    def compute_income_dist(self, data, income_measure, weight_var, dist_type,
+    kde_bw=None):
         """
         Compute the distribution of income (parametrically or not) from
         the raw data.
@@ -173,13 +175,16 @@ class IOT:
             # uses the original full data for kde estimation
             f_function = st.gaussian_kde(
                 self.data_original[income_measure],
-                weights=self.data_original[weight_var],
+                bw_method=kde_bw,
+                weights=self.data_original[weight_var]
             )
             f = f_function(z)
         elif dist_type == "kde_subset":
             # uses the subsetted data for kde estimation
             f_function = st.gaussian_kde(
-                data[income_measure], weights=data[weight_var]
+                data[income_measure], 
+                bw_method=kde_bw,
+                weights=data[weight_var]
             )
             f = f_function(z)
         else:
