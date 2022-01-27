@@ -41,9 +41,9 @@
     <script src="../../_static/clipboard.min.js"></script>
     <script src="../../_static/copybutton.js"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
-    <script src="../../_static/sphinx-book-theme.12a9622fbb08dcb3a2a40b2c02b83a57.js"></script>
-    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../../_static/sphinx-book-theme.d59cb220de22ca1c485ebbdc042f0030.js"></script>
     <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script async="async" src="https://unpkg.com/thebe@0.5.1/lib/index.js"></script>
     <script>
         const thebe_selector = ".thebe"
@@ -210,7 +210,7 @@
                 data-placement="left">.rst</button></a>
         <!-- Download PDF via print -->
         <button type="button" id="download-print" class="btn btn-secondary topbarbtn" title="Print to PDF"
-            onClick="window.print()" data-toggle="tooltip" data-placement="left">.pdf</button>
+                onclick="printPdf(this)" data-toggle="tooltip" data-placement="left">.pdf</button>
     </div>
 </div>
 
@@ -244,7 +244,7 @@
         </div>
 
         <!-- Table of contents -->
-        <div class="d-none d-md-block col-md-2 bd-toc show">
+        <div class="d-none d-md-block col-md-2 bd-toc show noprint">
             
             <div class="tocsection onthispage pt-5 pb-3">
                 <i class="fas fa-list"></i> Contents
@@ -264,7 +264,30 @@
 </div>
     <div id="main-content" class="row">
         <div class="col-12 col-md-9 pl-md-3 pr-md-0">
-        
+            <!-- Table of contents that is only displayed when printing the page -->
+            <div id="jb-print-docs-body" class="onlyprint">
+                <h1>Inverse Optimal Tax Class Object</h1>
+                <!-- Table of contents -->
+                <div id="print-main-content">
+                    <div id="jb-print-toc">
+                        
+                        <div>
+                            <h2> Contents </h2>
+                        </div>
+                        <nav aria-label="Page">
+                            <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#iot-inverse-optimal-tax">
+   iot.inverse_optimal_tax
+  </a>
+ </li>
+</ul>
+
+                        </nav>
+                    </div>
+                </div>
+            </div>
+            
               <div>
                 
   <div class="section" id="inverse-optimal-tax-class-object">
@@ -274,7 +297,7 @@
 <h2>iot.inverse_optimal_tax<a class="headerlink" href="#iot-inverse-optimal-tax" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="iot.inverse_optimal_tax.IOT">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">iot.inverse_optimal_tax.</span></span><span class="sig-name descname"><span class="pre">IOT</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">income_measure</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'expanded_income'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight_var</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'s006'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inc_elast</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.25</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bandwidth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lower_bound</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">upper_bound</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dist_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'kde_full'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mtr_smoother</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cubic_spline'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/iot/inverse_optimal_tax.html#IOT"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#iot.inverse_optimal_tax.IOT" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">iot.inverse_optimal_tax.</span></span><span class="sig-name descname"><span class="pre">IOT</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">income_measure</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'expanded_income'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight_var</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'s006'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inc_elast</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.25</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bandwidth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lower_bound</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">upper_bound</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dist_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'kde_full'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kde_bw</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mtr_smoother</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cubic_spline'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/iot/inverse_optimal_tax.html#IOT"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#iot.inverse_optimal_tax.IOT" title="Permalink to this definition">¶</a></dt>
 <dd><p>Constructor for the IOT class.</p>
 <p>This IOT class can be used to compute the social welfare weights
 across the income distribution given data, tax policy parameters,
@@ -307,7 +330,7 @@ function, if None, then use bin average mtrs</p></li>
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="iot.inverse_optimal_tax.IOT.compute_income_dist">
-<span class="sig-name descname"><span class="pre">compute_income_dist</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">income_measure</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight_var</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dist_type</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/iot/inverse_optimal_tax.html#IOT.compute_income_dist"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#iot.inverse_optimal_tax.IOT.compute_income_dist" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">compute_income_dist</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">income_measure</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight_var</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dist_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kde_bw</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/iot/inverse_optimal_tax.html#IOT.compute_income_dist"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#iot.inverse_optimal_tax.IOT.compute_income_dist" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute the distribution of income (parametrically or not) from
 the raw data.</p>
 <p>This method computes the probability density function and its
@@ -452,8 +475,8 @@ the income distribution</p>
 
               </div>
               
-        
-            <!-- Previous / next buttons -->
+            
+                <!-- Previous / next buttons -->
 <div class='prev-next-area'> 
     <a class='left-prev' id="prev-link" href="public_api.html" title="previous page">
         <i class="fas fa-angle-left"></i>
@@ -470,19 +493,17 @@ the income distribution</p>
     <i class="fas fa-angle-right"></i>
     </a>
 </div>
-        
+            
         </div>
     </div>
     <footer class="footer">
-    <div class="container">
-      <p>
-        
-          By Jason DeBacker and John P. Ryan<br/>
-        
-            &copy; Copyright 2021.<br/>
-      </p>
-    </div>
-  </footer>
+  <p>
+    
+      By Jason DeBacker and John P. Ryan<br/>
+    
+        &copy; Copyright 2021.<br/>
+  </p>
+</footer>
 </main>
 
 
