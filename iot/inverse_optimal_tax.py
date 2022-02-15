@@ -118,11 +118,11 @@ class IOT:
         if mtr_smoother == "cubic_spline":
             spl = UnivariateSpline(self.z, data_group.values)
             mtr = spl(self.z)
+            mtr_prime = (spl(self.z+.001) - mtr) /.001
         else:
             mtr = data_group.values
-
-        mtr_prime = np.diff(mtr) / np.diff(self.z)
-        mtr_prime = np.append(mtr_prime, mtr_prime[-1])
+            mtr_prime = np.diff(mtr) / np.diff(self.z)
+            mtr_prime = np.append(mtr_prime, mtr_prime[-1])
 
         return mtr, mtr_prime
 
@@ -171,6 +171,10 @@ class IOT:
                 / data[weight_var].sum()
             ).sum()
             f = st.lognorm.pdf(z, s=(sigmasq) ** 0.5, scale=np.exp(mu))
+            # Compute rate of change in pdf
+            f_prime = np.diff(f) / np.diff(z)
+            # assume diff between last bin and next is the same as before
+            f_prime = np.append(f_prime, f_prime[-1])
         elif dist_type == "kde_full":
             # uses the original full data for kde estimation
             f_function = st.gaussian_kde(
@@ -179,6 +183,7 @@ class IOT:
                 weights=self.data_original[weight_var]
             )
             f = f_function(z)
+            f_prime = (f_function(z+.001) - f) / .001
         elif dist_type == "kde_subset":
             # uses the subsetted data for kde estimation
             f_function = st.gaussian_kde(
@@ -187,17 +192,19 @@ class IOT:
                 weights=data[weight_var]
             )
             f = f_function(z)
+            f_prime = (f_function(z+.001) - f) / .001
         else:
             f = (
                 data[[weight_var, "z_bin"]].groupby("z_bin").sum()
                 / data[weight_var].sum()
             )[weight_var].values
-        f = f / np.sum(f)
+            # Compute rate of change in pdf
+            f_prime = np.diff(f) / np.diff(z)
+            # assume diff between last bin and next is the same as before
+            f_prime = np.append(f_prime, f_prime[-1])
 
-        # Compute rate of change in pdf
-        f_prime = np.diff(f) / np.diff(z)
-        # assume diff between last bin and next is the same as before
-        f_prime = np.append(f_prime, f_prime[-1])
+        # normalize f
+        f = f / np.sum(f)
 
         return z, f, f_prime
 
