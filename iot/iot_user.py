@@ -65,11 +65,12 @@ class iot_comparison:
         self.labels = labels
 
         for v in policies:
-            df.append(gen_microdata(year=year, data=data, reform=v))
+            df.append(gen_microdata(year=year, data=data, reform=v, mtr_wrt=mtr_wrt, income_measure=income_measure))
         # creates dataframes for each policy given as argument
         if compare_default:
             df.append(
                 gen_microdata(
+                    data=data,
                     year=year,
                     mtr_wrt=mtr_wrt,
                     income_measure=income_measure,
@@ -136,8 +137,45 @@ class iot_comparison:
                 )
             fig.update_layout(legend_title="Policy")
         fig.update_layout(
-            xaxis_title=r"$z$",
+            xaxis_title=r"z",
             yaxis_title=var,
         )
         return fig
 
+    def Saez2(self):
+        z = self.iot[0].df().z
+        f = self.iot[0].df().f
+        zbar = sum(z*f)
+        n = len(z)
+        zm = z
+        for m in range(n):
+            zm[m] = sum(z[m:n+1] * f[m:n+1]) / sum(f[m:n+1])
+        fig = px.line(x=z, y=zm/zbar)
+        fig.data[0].hovertemplate = (
+                "z=%{x}<br>" + "z_m/z_bar" + "=%{y}<extra></extra>"
+            )
+        fig.update_layout(
+            xaxis_title=r"z",
+            yaxis_title="z_m / z_bar",
+        )
+        return fig
+    
+    def JJZ4(self, policy="Current Law"):
+        k = self.labels.index(policy)
+        df = self.iot[k].df()
+        # g1 with mtr_prime = 0
+        g1 = (
+            1 +
+            (df.theta_z * self.iot[k].inc_elast * df.mtr) / (1 - df.mtr)
+            )
+        # g2 with theta_z = 0
+        g2 =(
+            1
+            + (
+                (self.iot[k].inc_elast * df.z * df.mtr_prime)
+                / (1 - df.mtr) ** 2
+            )
+        )
+        y = [df.g_z, g1, g2]
+        fig = px.line(x=df.z, y=y)
+        return fig
