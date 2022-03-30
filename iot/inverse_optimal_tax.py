@@ -120,7 +120,6 @@ class IOT:
             mtr = spl(self.z)
         else:
             mtr = data_group.values
-
         mtr_prime = np.diff(mtr) / np.diff(self.z)
         mtr_prime = np.append(mtr_prime, mtr_prime[-1])
 
@@ -192,9 +191,8 @@ class IOT:
                 data[[weight_var, "z_bin"]].groupby("z_bin").sum()
                 / data[weight_var].sum()
             )[weight_var].values
+        # normalize f
         f = f / np.sum(f)
-
-        # Compute rate of change in pdf
         f_prime = np.diff(f) / np.diff(z)
         # assume diff between last bin and next is the same as before
         f_prime = np.append(f_prime, f_prime[-1])
