@@ -366,11 +366,10 @@ const thebe_selector_output = ".output, .cell_output"
         <span class="k">if</span> <span class="n">mtr_smoother</span> <span class="o">==</span> <span class="s2">&quot;cubic_spline&quot;</span><span class="p">:</span>
             <span class="n">spl</span> <span class="o">=</span> <span class="n">UnivariateSpline</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">z</span><span class="p">,</span> <span class="n">data_group</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
             <span class="n">mtr</span> <span class="o">=</span> <span class="n">spl</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">z</span><span class="p">)</span>
-            <span class="n">mtr_prime</span> <span class="o">=</span> <span class="p">(</span><span class="n">spl</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">z</span><span class="o">+</span><span class="mf">.001</span><span class="p">)</span> <span class="o">-</span> <span class="n">mtr</span><span class="p">)</span> <span class="o">/</span><span class="mf">.001</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">mtr</span> <span class="o">=</span> <span class="n">data_group</span><span class="o">.</span><span class="n">values</span>
-            <span class="n">mtr_prime</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">mtr</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">z</span><span class="p">)</span>
-            <span class="n">mtr_prime</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mtr_prime</span><span class="p">,</span> <span class="n">mtr_prime</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">mtr_prime</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">mtr</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">z</span><span class="p">)</span>
+        <span class="n">mtr_prime</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mtr_prime</span><span class="p">,</span> <span class="n">mtr_prime</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
 
         <span class="k">return</span> <span class="n">mtr</span><span class="p">,</span> <span class="n">mtr_prime</span></div>
 
@@ -419,10 +418,6 @@ const thebe_selector_output = ".output, .cell_output"
                 <span class="o">/</span> <span class="n">data</span><span class="p">[</span><span class="n">weight_var</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
             <span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
             <span class="n">f</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">lognorm</span><span class="o">.</span><span class="n">pdf</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="p">(</span><span class="n">sigmasq</span><span class="p">)</span> <span class="o">**</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">mu</span><span class="p">))</span>
-            <span class="c1"># Compute rate of change in pdf</span>
-            <span class="n">f_prime</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
-            <span class="c1"># assume diff between last bin and next is the same as before</span>
-            <span class="n">f_prime</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">f_prime</span><span class="p">,</span> <span class="n">f_prime</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
         <span class="k">elif</span> <span class="n">dist_type</span> <span class="o">==</span> <span class="s2">&quot;kde_full&quot;</span><span class="p">:</span>
             <span class="c1"># uses the original full data for kde estimation</span>
             <span class="n">f_function</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">gaussian_kde</span><span class="p">(</span>
@@ -431,7 +426,6 @@ const thebe_selector_output = ".output, .cell_output"
                 <span class="n">weights</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">data_original</span><span class="p">[</span><span class="n">weight_var</span><span class="p">]</span>
             <span class="p">)</span>
             <span class="n">f</span> <span class="o">=</span> <span class="n">f_function</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
-            <span class="n">f_prime</span> <span class="o">=</span> <span class="p">(</span><span class="n">f_function</span><span class="p">(</span><span class="n">z</span><span class="o">+</span><span class="mf">.001</span><span class="p">)</span> <span class="o">-</span> <span class="n">f</span><span class="p">)</span> <span class="o">/</span> <span class="mf">.001</span>
         <span class="k">elif</span> <span class="n">dist_type</span> <span class="o">==</span> <span class="s2">&quot;kde_subset&quot;</span><span class="p">:</span>
             <span class="c1"># uses the subsetted data for kde estimation</span>
             <span class="n">f_function</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">gaussian_kde</span><span class="p">(</span>
@@ -440,19 +434,16 @@ const thebe_selector_output = ".output, .cell_output"
                 <span class="n">weights</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="n">weight_var</span><span class="p">]</span>
             <span class="p">)</span>
             <span class="n">f</span> <span class="o">=</span> <span class="n">f_function</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
-            <span class="n">f_prime</span> <span class="o">=</span> <span class="p">(</span><span class="n">f_function</span><span class="p">(</span><span class="n">z</span><span class="o">+</span><span class="mf">.001</span><span class="p">)</span> <span class="o">-</span> <span class="n">f</span><span class="p">)</span> <span class="o">/</span> <span class="mf">.001</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">f</span> <span class="o">=</span> <span class="p">(</span>
                 <span class="n">data</span><span class="p">[[</span><span class="n">weight_var</span><span class="p">,</span> <span class="s2">&quot;z_bin&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">&quot;z_bin&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
                 <span class="o">/</span> <span class="n">data</span><span class="p">[</span><span class="n">weight_var</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
             <span class="p">)[</span><span class="n">weight_var</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
-            <span class="c1"># Compute rate of change in pdf</span>
-            <span class="n">f_prime</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
-            <span class="c1"># assume diff between last bin and next is the same as before</span>
-            <span class="n">f_prime</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">f_prime</span><span class="p">,</span> <span class="n">f_prime</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
-
         <span class="c1"># normalize f</span>
         <span class="n">f</span> <span class="o">=</span> <span class="n">f</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+        <span class="n">f_prime</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
+        <span class="c1"># assume diff between last bin and next is the same as before</span>
+        <span class="n">f_prime</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">f_prime</span><span class="p">,</span> <span class="n">f_prime</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
 
         <span class="k">return</span> <span class="n">z</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">f_prime</span></div>
 
