@@ -3,7 +3,9 @@ import pandas as pd
 import numpy as np
 import copy
 import pytest
+import os
 from iot.inverse_optimal_tax import IOT
+CUR_PATH = os.path.abspath(os.path.dirname(__file__))
 
 
 def test_IOT_df():
@@ -16,41 +18,62 @@ def test_IOT_df():
     calc = taxcalc.calculator.Calculator(policy=pol, records=rec)
     calc.advance_to_year(2022)
     calc.calc_all()
-    df = calc.dataframe(["s006", "expanded_income", "XTOT", "combined"])
+    data = calc.dataframe(["s006", "expanded_income", "XTOT", "combined"])
     (_, _, mtr1) = calc.mtr(
         "e00200p", calc_all_already_called=True, wrt_full_compensation=False
     )
-    df["mtr"] = mtr1
+    data["mtr"] = mtr1
     # create instance of IOT object
-    iot1 = IOT(df, dist_type="log_normal", mtr_smoother="cubic_spline")
+    iot1 = IOT(data, dist_type="log_normal", mtr_smoother="cubic_spline")
     # return df from IOT object
     df_out = iot1.df()
 
     assert isinstance(df_out, pd.DataFrame)
 
 
-# def test_IOT_compute_mtr_dist():
-#     """
-#     Test computation of the mtr distribution
-#     """
-#     pol = taxcalc.policy.Policy()
-#     rec = taxcalc.records.Records.cps_constructor()
-#     calc = taxcalc.calculator.Calculator(policy=pol, records=rec)
-#     calc.advance_to_year(2022)
-#     calc.calc_all()
-#     df = calc.dataframe(["s006", "expanded_income", "XTOT", "combined"])
-#     (_, _, mtr1) = calc.mtr(
-#         "e00200p", calc_all_already_called=True, wrt_full_compensation=False
-#     )
-#     df["mtr"] = mtr1
-#     # create instance of IOT object
-#     mtr_smoother = "cubic_spline"
-#     weight_var = "s006"
-#     iot1 = IOT(df, dist_type="log_normal", mtr_smoother=mtr_smoother)
-#     mtr, mtr_prime = iot1.compute_mtr_dist(df, weight_var, mtr_smoother)
+def test_IOT_compute_mtr_dist():
+    """
+    Test computation of the mtr distribution
+    """
+    pol = taxcalc.policy.Policy()
+    rec = taxcalc.records.Records.cps_constructor()
+    calc = taxcalc.calculator.Calculator(policy=pol, records=rec)
+    calc.advance_to_year(2022)
+    calc.calc_all()
+    data = calc.dataframe(["s006", "expanded_income", "XTOT", "combined"])
+    income_measure = "expanded_income"
+    upper_bound = 500000
+    lower_bound = 0
+    bandwidth = 1000
+    (_, _, mtr1) = calc.mtr(
+        "e00200p", calc_all_already_called=True, wrt_full_compensation=False
+    )
+    data["mtr"] = mtr1
+    # clean data based on upper and lower bounds
+    data = data[
+        (data[income_measure] >= lower_bound)
+        & (data[income_measure] <= upper_bound)
+    ]
+    # create bins for analysis
+    bins = np.arange(
+        start=lower_bound, stop=upper_bound + bandwidth, step=bandwidth
+    )
+    data["z_bin"] = pd.cut(data[income_measure], bins, include_lowest=True)
+    # create instance of IOT object
+    mtr_smoother = "cubic_spline"
+    weight_var = "s006"
+    # iot1 = IOT(df, dist_type="log_normal", mtr_smoother=mtr_smoother)
+    iot1 = IOT(data)
+    mtr, mtr_prime = iot1.compute_mtr_dist(data, weight_var, mtr_smoother)
+    # np.savetxt(os.path.join(CUR_PATH, 'test_io_data', 'mtr.csv'), mtr, delimiter=",")
+    expected_mtr = np.genfromtxt(
+        os.path.join(CUR_PATH, 'test_io_data', 'mtr.csv'), delimiter=',')
 
-#     assert np.allclose(mtr, expected_mtr)
+    assert np.allclose(mtr, expected_mtr)
 
+# In tests above and below, will need to experiment with different
+# income measures and lower and upper bounds (625000 seems to be limit so far)
+# may need to do something with bins with no observations in them
 
 # def test_IOT_compute_income_dist():
 #     """
