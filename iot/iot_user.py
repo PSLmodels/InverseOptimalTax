@@ -140,16 +140,15 @@ class iot_comparison:
                     + "<br>"+ OUTPUT_LABELS[income_measure] + "=%{x:$,.2f}<br>"
                     + OUTPUT_LABELS[var]
                     + "=%{y:.3f}<extra></extra>"
-                    # change format for y so 3 signif digits, y so in thousands with three sig digitis
                 )
             fig.update_layout(legend_title="Policy")
         fig.update_layout(
             xaxis_title=OUTPUT_LABELS[income_measure],
-            yaxis_title=r'$\omega_z$'
+            yaxis_title=OUTPUT_LABELS[var],
         )
         return fig
 
-    def Saez2(self):
+    def SaezFig2(self):
         z = self.iot[0].df().z
         f = self.iot[0].df().f
         zbar = sum(z*f)
@@ -167,7 +166,7 @@ class iot_comparison:
         )
         return fig
 
-    def JJZ4(self, policy="Current Law"):
+    def JJZFig4(self, policy="Current Law"):
         k = self.labels.index(policy)
         df = self.iot[k].df()
         # g1 with mtr_prime = 0
