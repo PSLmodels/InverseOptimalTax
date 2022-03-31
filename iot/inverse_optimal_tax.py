@@ -62,7 +62,9 @@ class IOT:
         self.z, self.f, self.f_prime = self.compute_income_dist(
             data, income_measure, weight_var, dist_type, kde_bw
         )
-        self.mtr, self.mtr_prime = self.compute_mtr_dist(data, weight_var, mtr_smoother)
+        self.mtr, self.mtr_prime = self.compute_mtr_dist(
+            data, weight_var, mtr_smoother
+        )
         self.theta_z = 1 + ((self.z * self.f_prime) / self.f)
         self.g_z = self.sw_weights()
 
@@ -154,14 +156,16 @@ class IOT:
         data_group = (
             data[[income_measure, "z_bin", weight_var]]
             .groupby(["z_bin"])
-            .apply(lambda x: np.average(x[income_measure], weights=x[weight_var]))
+            .apply(
+                lambda x: np.average(x[income_measure], weights=x[weight_var])
+            )
         )
         z = data_group.values
 
         if dist_type == "log_normal":
-            mu = (np.log(data[income_measure]) * data[weight_var]).sum() / data[
-                weight_var
-            ].sum()
+            mu = (
+                np.log(data[income_measure]) * data[weight_var]
+            ).sum() / data[weight_var].sum()
             sigmasq = (
                 (((np.log(data[income_measure]) - mu) ** 2) * data[weight_var])
                 / data[weight_var].sum()
@@ -178,7 +182,9 @@ class IOT:
         elif dist_type == "kde_subset":
             # uses the subsetted data for kde estimation
             f_function = st.gaussian_kde(
-                data[income_measure], bw_method=kde_bw, weights=data[weight_var]
+                data[income_measure],
+                bw_method=kde_bw,
+                weights=data[weight_var],
             )
             f = f_function(z)
         else:
@@ -214,7 +220,10 @@ class IOT:
         g_z = (
             1
             + ((self.theta_z * self.inc_elast * self.mtr) / (1 - self.mtr))
-            + ((self.inc_elast * self.z * self.mtr_prime) / (1 - self.mtr) ** 2)
+            + (
+                (self.inc_elast * self.z * self.mtr_prime)
+                / (1 - self.mtr) ** 2
+            )
         )
 
         return g_z

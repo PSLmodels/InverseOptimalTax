@@ -52,10 +52,13 @@ def test_IOT_compute_mtr_dist():
     data["mtr"] = mtr1
     # clean data based on upper and lower bounds
     data = data[
-        (data[income_measure] >= lower_bound) & (data[income_measure] <= upper_bound)
+        (data[income_measure] >= lower_bound)
+        & (data[income_measure] <= upper_bound)
     ]
     # create bins for analysis
-    bins = np.arange(start=lower_bound, stop=upper_bound + bandwidth, step=bandwidth)
+    bins = np.arange(
+        start=lower_bound, stop=upper_bound + bandwidth, step=bandwidth
+    )
     data["z_bin"] = pd.cut(data[income_measure], bins, include_lowest=True)
     # create instance of IOT object
     mtr_smoother = "cubic_spline"
@@ -104,7 +107,9 @@ iot2.mtr_prime = np.array([0.03, 0.03, 0.03, 0.0, 0.0, 0.0])
 expected_g_z = np.array([81.17, 24.4975, 1.0, 1.2, 1.2, 1.0])
 
 
-@pytest.mark.parametrize("iot,expected_g_z", [(iot2, expected_g_z)], ids=["Test array"])
+@pytest.mark.parametrize(
+    "iot,expected_g_z", [(iot2, expected_g_z)], ids=["Test array"]
+)
 def test_IOT_sw_weights(iot, expected_g_z):
     """
     Test computation of the social welfare weights

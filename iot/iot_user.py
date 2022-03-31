@@ -179,7 +179,9 @@ class iot_comparison:
         # g1 with mtr_prime = 0
         g1 = 1 + (df.theta_z * self.iot[k].inc_elast * df.mtr) / (1 - df.mtr)
         # g2 with theta_z = 0
-        g2 = 1 + ((self.iot[k].inc_elast * df.z * df.mtr_prime) / (1 - df.mtr) ** 2)
+        g2 = 1 + (
+            (self.iot[k].inc_elast * df.z * df.mtr_prime) / (1 - df.mtr) ** 2
+        )
         y = [df.g_z, g1, g2]
         fig = px.line(x=df.z, y=y)
         return fig
