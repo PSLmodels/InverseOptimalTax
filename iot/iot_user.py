@@ -161,8 +161,8 @@ class iot_comparison:
                 "z=%{x:$,.2f}<br>" + "z_m/z_bar" + "=%{y:.3f}<extra></extra>"
             )
         fig.update_layout(
-            xaxis_title=r"z",
-            yaxis_title="z_m / z_bar",
+            xaxis_title=r"$z$",
+            yaxis_title=r"$z_m / \bar{z}$",
         )
         return fig
 
