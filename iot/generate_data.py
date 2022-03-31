@@ -30,9 +30,12 @@ def gen_microdata(
     if data == "CPS":
         recs = tc.Records.cps_constructor()
     elif data == "PUF":
-        recs = tc.Records()
-        # looks for 'puf.csv' in cd
-        pass
+        try:
+            # looks for 'puf.csv' in cd
+            recs = tc.Records()
+        except:
+            print("PUF data not found")
+            return
     pol1 = tc.Policy()
 
     if isinstance(reform, str):

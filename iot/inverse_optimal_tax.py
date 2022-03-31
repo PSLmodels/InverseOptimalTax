@@ -125,8 +125,9 @@ class IOT:
 
         return mtr, mtr_prime
 
-    def compute_income_dist(self, data, income_measure, weight_var, dist_type,
-    kde_bw=None):
+    def compute_income_dist(
+        self, data, income_measure, weight_var, dist_type, kde_bw=None
+    ):
         """
         Compute the distribution of income (parametrically or not) from
         the raw data.
@@ -175,15 +176,15 @@ class IOT:
             f_function = st.gaussian_kde(
                 self.data_original[income_measure],
                 bw_method=kde_bw,
-                weights=self.data_original[weight_var]
+                weights=self.data_original[weight_var],
             )
             f = f_function(z)
         elif dist_type == "kde_subset":
             # uses the subsetted data for kde estimation
             f_function = st.gaussian_kde(
-                data[income_measure], 
+                data[income_measure],
                 bw_method=kde_bw,
-                weights=data[weight_var]
+                weights=data[weight_var],
             )
             f = f_function(z)
         else:
