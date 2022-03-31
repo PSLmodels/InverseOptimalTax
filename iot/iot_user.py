@@ -103,7 +103,7 @@ class iot_comparison:
                 )
             )
 
-    def plot(self, var="g_z", income_measure='z'):
+    def plot(self, var="g_z", income_measure="z"):
         """
         Used to plot the attributes of the IOT class objects
         for each policy.
@@ -126,7 +126,12 @@ class iot_comparison:
         """
         if var in ["f", "f_prime", "theta_z"]:
             fig = px.line(x=self.iot[0].df().z, y=self.iot[0].df()[var])
-            fig.data[0].hovertemplate = OUTPUT_LABELS[income_measure] + "=%{x:$,.2f}<br>" + OUTPUT_LABELS[var] + "=%{y:.3f}<extra></extra>"
+            fig.data[0].hovertemplate = (
+                OUTPUT_LABELS[income_measure]
+                + "=%{x:$,.2f}<br>"
+                + OUTPUT_LABELS[var]
+                + "=%{y:.3f}<extra></extra>"
+            )
         else:
             y = []
             for i in self.iot:
@@ -137,7 +142,9 @@ class iot_comparison:
                 fig.data[j[0]].hovertemplate = (
                     "Policy="
                     + j[1]
-                    + "<br>"+ OUTPUT_LABELS[income_measure] + "=%{x:$,.2f}<br>"
+                    + "<br>"
+                    + OUTPUT_LABELS[income_measure]
+                    + "=%{x:$,.2f}<br>"
                     + OUTPUT_LABELS[var]
                     + "=%{y:.3f}<extra></extra>"
                 )
@@ -151,15 +158,15 @@ class iot_comparison:
     def SaezFig2(self):
         z = self.iot[0].df().z
         f = self.iot[0].df().f
-        zbar = sum(z*f)
+        zbar = sum(z * f)
         n = len(z)
         zm = z
         for m in range(n):
-            zm[m] = sum(z[m:n+1] * f[m:n+1]) / sum(f[m:n+1])
-        fig = px.line(x=z, y=zm/zbar)
+            zm[m] = sum(z[m : n + 1] * f[m : n + 1]) / sum(f[m : n + 1])
+        fig = px.line(x=z, y=zm / zbar)
         fig.data[0].hovertemplate = (
-                "z=%{x:$,.2f}<br>" + "z_m/z_bar" + "=%{y:.3f}<extra></extra>"
-            )
+            "z=%{x:$,.2f}<br>" + "z_m/z_bar" + "=%{y:.3f}<extra></extra>"
+        )
         fig.update_layout(
             xaxis_title=r"$z$",
             yaxis_title=r"$z_m / \bar{z}$",
@@ -170,18 +177,9 @@ class iot_comparison:
         k = self.labels.index(policy)
         df = self.iot[k].df()
         # g1 with mtr_prime = 0
-        g1 = (
-            1 +
-            (df.theta_z * self.iot[k].inc_elast * df.mtr) / (1 - df.mtr)
-            )
+        g1 = 1 + (df.theta_z * self.iot[k].inc_elast * df.mtr) / (1 - df.mtr)
         # g2 with theta_z = 0
-        g2 =(
-            1
-            + (
-                (self.iot[k].inc_elast * df.z * df.mtr_prime)
-                / (1 - df.mtr) ** 2
-            )
-        )
+        g2 = 1 + ((self.iot[k].inc_elast * df.z * df.mtr_prime) / (1 - df.mtr) ** 2)
         y = [df.g_z, g1, g2]
         fig = px.line(x=df.z, y=y)
         return fig
