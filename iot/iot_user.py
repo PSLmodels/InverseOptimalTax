@@ -1,12 +1,11 @@
-# %%
 from iot.inverse_optimal_tax import IOT
 from iot.generate_data import gen_microdata
+from iot.constants import CURRENT_YEAR, OUTPUT_LABELS
 
 # import plotly.io as pio
 import plotly.express as px
 
 
-# %%
 class iot_comparison:
     """
     Uses gen_microdata to generate tax data for each policy and
@@ -42,7 +41,7 @@ class iot_comparison:
 
     def __init__(
         self,
-        year=2022,
+        years=[CURRENT_YEAR],
         policies=[],
         labels=[],
         data="CPS",
@@ -64,10 +63,10 @@ class iot_comparison:
         # IOT class objects for each polciy
         self.labels = labels
 
-        for v in policies:
+        for i, v in enumerate(policies):
             df.append(
                 gen_microdata(
-                    year=year,
+                    year=years[i],
                     data=data,
                     reform=v,
                     mtr_wrt=mtr_wrt,
@@ -75,13 +74,12 @@ class iot_comparison:
                     weight_var=weight_var,
                 )
             )
-        # creates dataframes for each policy given as argument
+        # create results for current law policy
         if compare_default:
             df.append(
                 gen_microdata(
                     data=data,
-                    year=year,
-                    data=data,
+                    year=CURRENT_YEAR,
                     mtr_wrt=mtr_wrt,
                     income_measure=income_measure,
                     weight_var=weight_var,
@@ -105,7 +103,7 @@ class iot_comparison:
                 )
             )
 
-    def plot(self, var="g_z"):
+    def plot(self, var="g_z", income_measure='z'):
         """
         Used to plot the attributes of the IOT class objects
         for each policy.
@@ -128,7 +126,7 @@ class iot_comparison:
         """
         if var in ["f", "f_prime", "theta_z"]:
             fig = px.line(x=self.iot[0].df().z, y=self.iot[0].df()[var])
-            fig.data[0].hovertemplate = "z=%{x}<br>" + var + "=%{y}<extra></extra>"
+            fig.data[0].hovertemplate = OUTPUT_LABELS[income_measure] + "=%{x:$,.2f}<br>" + OUTPUT_LABELS[var] + "=%{y:.3f}<extra></extra>"
         else:
             y = []
             for i in self.iot:
@@ -139,14 +137,15 @@ class iot_comparison:
                 fig.data[j[0]].hovertemplate = (
                     "Policy="
                     + j[1]
-                    + "<br>z=%{x}<br>"
-                    + var
-                    + "=%{y}<extra></extra>"
+                    + "<br>"+ OUTPUT_LABELS[income_measure] + "=%{x:$,.2f}<br>"
+                    + OUTPUT_LABELS[var]
+                    + "=%{y:.3f}<extra></extra>"
+                    # change format for y so 3 signif digits, y so in thousands with three sig digitis
                 )
             fig.update_layout(legend_title="Policy")
         fig.update_layout(
-            xaxis_title=r"z",
-            yaxis_title=var,
+            xaxis_title=OUTPUT_LABELS[income_measure],
+            yaxis_title=r'$\omega_z$'
         )
         return fig
 
@@ -160,7 +159,7 @@ class iot_comparison:
             zm[m] = sum(z[m:n+1] * f[m:n+1]) / sum(f[m:n+1])
         fig = px.line(x=z, y=zm/zbar)
         fig.data[0].hovertemplate = (
-                "z=%{x}<br>" + "z_m/z_bar" + "=%{y}<extra></extra>"
+                "z=%{x:$,.2f}<br>" + "z_m/z_bar" + "=%{y:.3f}<extra></extra>"
             )
         fig.update_layout(
             xaxis_title=r"z",
