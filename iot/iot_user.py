@@ -265,8 +265,8 @@ class iot_comparison:
             {
                 self.income_measure: df.z,
                 "Overall weight": df.g_z,
-                "Tax Base Elasticity": df.g_z - g2,
-                "Nonconstant MTRs": df.g_z - g2 - g1,
+                "Tax Base Elasticity": df.g_z - g1,
+                "Nonconstant MTRs": df.g_z - g1 - g2,
             }
         )
         fig = go.Figure()
