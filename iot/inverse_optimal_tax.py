@@ -2,11 +2,12 @@ import numpy as np
 import pandas as pd
 import scipy.stats as st
 from scipy.interpolate import UnivariateSpline
+from statsmodels.nonparametric.kernel_regression import KernelReg
 
 
 class IOT:
     """
-    Constructor for the IOT class.
+    Constructor for thse IOT class.
 
     This IOT class can be used to compute the social welfare weights
     across the income distribution given data, tax policy parameters,
@@ -63,7 +64,7 @@ class IOT:
             data, income_measure, weight_var, dist_type, kde_bw
         )
         self.mtr, self.mtr_prime = self.compute_mtr_dist(
-            data, weight_var, mtr_smoother
+            data, income_measure, weight_var, mtr_smoother
         )
         self.theta_z = 1 + ((self.z * self.f_prime) / self.f)
         self.g_z = self.sw_weights()
@@ -91,7 +92,7 @@ class IOT:
         df = pd.DataFrame.from_dict(dict_out)
         return df
 
-    def compute_mtr_dist(self, data, weight_var, mtr_smoother):
+    def compute_mtr_dist(self, data, income_measure, weight_var, mtr_smoother):
         """
         Compute marginal tax rates over the income distribution and
         their derivative.
@@ -116,8 +117,14 @@ class IOT:
             .apply(lambda x: np.average(x["mtr"], weights=x[weight_var]))
         )
         if mtr_smoother == "cubic_spline":
-            spl = UnivariateSpline(self.z, data_group.values)
+            spl = UnivariateSpline(self.z, data_group.values, k=4)
             mtr = spl(self.z)
+        elif mtr_smoother == "kr":
+            mtr_function = KernelReg(
+                data_group.values, self.z, var_type='c', reg_type='ll',
+                bw=[15000], ckertype='gaussian',
+                defaults=None)
+            mtr, _ = mtr_function.fit(self.z)
         else:
             mtr = data_group.values
         mtr_prime = np.diff(mtr) / np.diff(self.z)
