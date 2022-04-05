@@ -61,7 +61,7 @@ def test_IOT_compute_mtr_dist():
     )
     data["z_bin"] = pd.cut(data[income_measure], bins, include_lowest=True)
     # create instance of IOT object
-    mtr_smoother = "cubic_spline"
+    mtr_smoother = "spline"
     weight_var = "s006"
     # iot1 = IOT(df, dist_type="log_normal", mtr_smoother=mtr_smoother)
     iot1 = IOT(data)
@@ -95,7 +95,7 @@ df = calc.dataframe(["s006", "expanded_income", "XTOT", "combined"])
 )
 df["mtr"] = mtr1
 # create instance of IOT object
-mtr_smoother = "cubic_spline"
+mtr_smoother = "spline"
 weight_var = "s006"
 iot1 = IOT(df, dist_type="log_normal", mtr_smoother=mtr_smoother,  mtr_smooth_param=3)
 iot2 = copy.deepcopy(iot1)
