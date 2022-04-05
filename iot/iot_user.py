@@ -107,7 +107,7 @@ class iot_comparison:
                     dist_type=dist_type,
                     kde_bw=kde_bw,
                     mtr_smoother=mtr_smoother,
-                    mtr_smooth_param=mtr_smooth_param
+                    mtr_smooth_param=mtr_smooth_param,
                 )
             )
 
@@ -222,25 +222,33 @@ class iot_comparison:
             }
         )
         fig = go.Figure()
-        fig.add_trace(go.Scatter(
-            x=plot_df[self.income_measure],
-            y=plot_df["Overall weight"],
-            fill=None,
-            mode='lines',
-            name='Overall weight'
-            ))
-        fig.add_trace(go.Scatter(
-            x=plot_df[self.income_measure],
-            y=plot_df["Tax Base Elasticity"],
-            fill='tonexty',  # fill area between trace0 and trace1
-            mode='lines',
-            name='Tax Base Elasticity'))
-        fig.add_trace(go.Scatter(
-            x=plot_df[self.income_measure],
-            y=plot_df["Nonconstant MTRs"],
-            fill='tonexty',  # fill area between trace1 and trace2
-            mode='lines',
-            name='Nonconstant MTRs'))
+        fig.add_trace(
+            go.Scatter(
+                x=plot_df[self.income_measure],
+                y=plot_df["Overall weight"],
+                fill=None,
+                mode="lines",
+                name="Overall weight",
+            )
+        )
+        fig.add_trace(
+            go.Scatter(
+                x=plot_df[self.income_measure],
+                y=plot_df["Tax Base Elasticity"],
+                fill="tonexty",  # fill area between trace0 and trace1
+                mode="lines",
+                name="Tax Base Elasticity",
+            )
+        )
+        fig.add_trace(
+            go.Scatter(
+                x=plot_df[self.income_measure],
+                y=plot_df["Nonconstant MTRs"],
+                fill="tonexty",  # fill area between trace1 and trace2
+                mode="lines",
+                name="Nonconstant MTRs",
+            )
+        )
         fig.update_layout(
             xaxis_title=OUTPUT_LABELS[self.income_measure],
             yaxis_title=r"$g_z$",
