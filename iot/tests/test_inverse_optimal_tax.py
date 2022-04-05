@@ -25,7 +25,7 @@ def test_IOT_df():
     )
     data["mtr"] = mtr1
     # create instance of IOT object
-    iot1 = IOT(data, dist_type="log_normal", mtr_smoother="cubic_spline")
+    iot1 = IOT(data, dist_type="log_normal", mtr_smoother="cubic_spline", mtr_smooth_param=3)
     # return df from IOT object
     df_out = iot1.df()
 
@@ -65,7 +65,7 @@ def test_IOT_compute_mtr_dist():
     weight_var = "s006"
     # iot1 = IOT(df, dist_type="log_normal", mtr_smoother=mtr_smoother)
     iot1 = IOT(data)
-    mtr, mtr_prime = iot1.compute_mtr_dist(data, weight_var, mtr_smoother)
+    mtr, mtr_prime = iot1.compute_mtr_dist(data, weight_var, mtr_smoother, 3)
     # np.savetxt(os.path.join(CUR_PATH, 'test_io_data', 'mtr.csv'), mtr, delimiter=",")
     expected_mtr = np.genfromtxt(
         os.path.join(CUR_PATH, "test_io_data", "mtr.csv"), delimiter=","
@@ -97,7 +97,7 @@ df["mtr"] = mtr1
 # create instance of IOT object
 mtr_smoother = "cubic_spline"
 weight_var = "s006"
-iot1 = IOT(df, dist_type="log_normal", mtr_smoother=mtr_smoother)
+iot1 = IOT(df, dist_type="log_normal", mtr_smoother=mtr_smoother,  mtr_smooth_param=3)
 iot2 = copy.deepcopy(iot1)
 iot2.theta_z = np.array([1.7, 2.4, 99.0, 1.5, 1.5, 1.5])
 iot2.inc_elast = np.array([0.3, 0.1, 0.0, 0.4, 0.4, 0.4])
