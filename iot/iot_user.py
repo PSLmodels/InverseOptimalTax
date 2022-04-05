@@ -59,6 +59,7 @@ class iot_comparison:
         dist_type="kde_full",
         kde_bw=None,
         mtr_smoother="spline",
+        mtr_smooth_param=4,
     ):
         self.income_measure = income_measure
         self.weight_var = weight_var
@@ -106,6 +107,7 @@ class iot_comparison:
                     dist_type=dist_type,
                     kde_bw=kde_bw,
                     mtr_smoother=mtr_smoother,
+                    mtr_smooth_param=mtr_smooth_param
                 )
             )
 
@@ -194,56 +196,6 @@ class iot_comparison:
         return fig
 
     def JJZFig4(self, policy="Current Law"):
-        k = self.labels.index(policy)
-        df = self.iot[k].df()
-        # g1 with mtr_prime = 0
-        # g1 = 1 + (df.theta_z * self.iot[k].inc_elast * df.mtr) / (1 - df.mtr)
-        g1 = (
-            0.
-            + ((df.theta_z * self.iot[k].inc_elast * df.mtr) / (1 - df.mtr))
-            + ((self.iot[k].inc_elast * df.z * 0) / (1 - df.mtr) ** 2)
-        )
-        # g2 with theta_z = 0
-        # g2 = 1 + (
-        #     (self.iot[k].inc_elast * df.z * df.mtr_prime) / (1 - df.mtr) ** 2
-        # )
-        g2 = (
-            0.
-            + ((0 * self.iot[k].inc_elast * df.mtr) / (1 - df.mtr))
-            + (
-                (self.iot[k].inc_elast * df.z * df.mtr_prime)
-                / (1 - df.mtr) ** 2
-            )
-        )
-        plot_df = pd.DataFrame(
-            {
-                self.income_measure: df.z,
-                "Overall weight": df.g_z,
-                "Tax Base Elasticity": g1,
-                "Nonconstant MTRs": g2,
-                "": np.ones_like(g2)
-            }
-        )
-        fig = px.area(
-            plot_df,
-            x=plot_df[self.income_measure],
-            y=["", "Tax Base Elasticity", "Nonconstant MTRs"],
-        )
-        # fig.add_trace(px.line(plot_df, x=plot_df[self.income_measure], y='Overall weight'))
-        fig.add_trace(
-            go.Scatter(
-                x=plot_df[self.income_measure],
-                y=plot_df["Overall weight"],
-                name="Overall weight"
-            )
-        )
-        fig.update_layout(
-            xaxis_title=OUTPUT_LABELS[self.income_measure],
-            yaxis_title=r"$g_z$",
-        )
-        return fig
-
-    def JJZFig4_v2(self, policy="Current Law"):
         k = self.labels.index(policy)
         df = self.iot[k].df()
         # g1 with mtr_prime = 0
