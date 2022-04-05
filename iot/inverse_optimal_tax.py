@@ -45,6 +45,7 @@ class IOT:
         dist_type="kde_full",
         kde_bw=None,
         mtr_smoother="spline",
+        mtr_smooth_param=4,
     ):
 
         # keep the original data intact
@@ -64,7 +65,7 @@ class IOT:
             data, income_measure, weight_var, dist_type, kde_bw
         )
         self.mtr, self.mtr_prime = self.compute_mtr_dist(
-            data, income_measure, weight_var, mtr_smoother
+            data, weight_var, mtr_smoother, mtr_smooth_param
         )
         self.theta_z = 1 + ((self.z * self.f_prime) / self.f)
         self.g_z = self.sw_weights()
@@ -92,7 +93,7 @@ class IOT:
         df = pd.DataFrame.from_dict(dict_out)
         return df
 
-    def compute_mtr_dist(self, data, income_measure, weight_var, mtr_smoother):
+    def compute_mtr_dist(self, data, weight_var, mtr_smoother, mtr_smooth_param):
         """
         Compute marginal tax rates over the income distribution and
         their derivative.
@@ -117,12 +118,12 @@ class IOT:
             .apply(lambda x: np.average(x["mtr"], weights=x[weight_var]))
         )
         if mtr_smoother == "spline":
-            spl = UnivariateSpline(self.z, data_group.values, k=4)
+            spl = UnivariateSpline(self.z, data_group.values, k=mtr_smooth_param)
             mtr = spl(self.z)
         elif mtr_smoother == "kr":
             mtr_function = KernelReg(
                 data_group.values, self.z, var_type='c', reg_type='ll',
-                bw=[15000], ckertype='gaussian',
+                bw=[mtr_smooth_param], ckertype='gaussian',
                 defaults=None)
             mtr, _ = mtr_function.fit(self.z)
         else:
