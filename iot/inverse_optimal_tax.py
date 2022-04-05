@@ -44,7 +44,7 @@ class IOT:
         upper_bound=500000,
         dist_type="kde_full",
         kde_bw=None,
-        mtr_smoother="cubic_spline",
+        mtr_smoother="spline",
     ):
 
         # keep the original data intact
@@ -116,7 +116,7 @@ class IOT:
             .groupby(["z_bin"])
             .apply(lambda x: np.average(x["mtr"], weights=x[weight_var]))
         )
-        if mtr_smoother == "cubic_spline":
+        if mtr_smoother == "spline":
             spl = UnivariateSpline(self.z, data_group.values, k=4)
             mtr = spl(self.z)
         elif mtr_smoother == "kr":

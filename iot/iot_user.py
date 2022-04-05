@@ -58,7 +58,7 @@ class iot_comparison:
         upper_bound=500000,
         dist_type="kde_full",
         kde_bw=None,
-        mtr_smoother="cubic_spline",
+        mtr_smoother="spline",
     ):
         self.income_measure = income_measure
         self.weight_var = weight_var
