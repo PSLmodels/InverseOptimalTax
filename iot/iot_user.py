@@ -4,6 +4,9 @@ from iot.constants import CURRENT_YEAR, OUTPUT_LABELS
 
 # import plotly.io as pio
 import plotly.express as px
+import plotly.graph_objects as go
+import numpy as np
+import pandas as pd
 
 
 class iot_comparison:
@@ -55,8 +58,12 @@ class iot_comparison:
         upper_bound=500000,
         dist_type="kde_full",
         kde_bw=None,
-        mtr_smoother="cubic_spline",
+        mtr_smoother="spline",
+        mtr_smooth_param=4,
     ):
+        self.income_measure = income_measure
+        self.weight_var = weight_var
+        self.upper_bound = upper_bound
         df = []
         self.iot = []
         # inititalize list of dataframes and
@@ -100,10 +107,11 @@ class iot_comparison:
                     dist_type=dist_type,
                     kde_bw=kde_bw,
                     mtr_smoother=mtr_smoother,
+                    mtr_smooth_param=mtr_smooth_param,
                 )
             )
 
-    def plot(self, var="g_z", income_measure="z"):
+    def plot(self, var="g_z"):
         """
         Used to plot the attributes of the IOT class objects
         for each policy.
@@ -127,7 +135,7 @@ class iot_comparison:
         if var in ["f", "f_prime", "theta_z"]:
             fig = px.line(x=self.iot[0].df().z, y=self.iot[0].df()[var])
             fig.data[0].hovertemplate = (
-                OUTPUT_LABELS[income_measure]
+                OUTPUT_LABELS[self.income_measure]
                 + "=%{x:$,.2f}<br>"
                 + OUTPUT_LABELS[var]
                 + "=%{y:.3f}<extra></extra>"
@@ -143,33 +151,47 @@ class iot_comparison:
                     "Policy="
                     + j[1]
                     + "<br>"
-                    + OUTPUT_LABELS[income_measure]
+                    + OUTPUT_LABELS[self.income_measure]
                     + "=%{x:$,.2f}<br>"
                     + OUTPUT_LABELS[var]
                     + "=%{y:.3f}<extra></extra>"
                 )
             fig.update_layout(legend_title="Policy")
         fig.update_layout(
-            xaxis_title=OUTPUT_LABELS[income_measure],
+            xaxis_title=OUTPUT_LABELS[self.income_measure],
             yaxis_title=OUTPUT_LABELS[var],
         )
         return fig
 
-    def SaezFig2(self):
-        z = self.iot[0].df().z
-        f = self.iot[0].df().f
-        zbar = sum(z * f)
-        n = len(z)
-        zm = z
-        for m in range(n):
-            zm[m] = sum(z[m : n + 1] * f[m : n + 1]) / sum(f[m : n + 1])
-        fig = px.line(x=z, y=zm / zbar)
+    def SaezFig2(self, DS2011=False, upper_bound=None):
+        df = self.iot[0].data_original.copy()
+        df.sort_values(by=[self.income_measure], inplace=True)
+        df["zm"] = (
+            sum(df[self.income_measure] * df[self.weight_var])
+            - np.cumsum(df[self.income_measure] * df[self.weight_var])
+        ) / (sum(df[self.weight_var]) - np.cumsum(df[self.weight_var]))
+        if DS2011:  # Diamond and Saez (2011)
+            df["y_var"] = df.zm / (df.zm - df[self.income_measure])
+            lower_bound = 0
+            y_string = r"$z_m / z$"
+        else:  # Saez (2001)
+            df["y_var"] = df.zm / df[self.income_measure]
+            lower_bound = 10000
+            y_string = r"$z_m / z$"
+        if upper_bound is None:
+            upper_bound = self.upper_bound
+        df.drop(df[df[self.income_measure] < lower_bound].index, inplace=True)
+        df.drop(df[df[self.income_measure] > upper_bound].index, inplace=True)
+        fig = px.line(x=df[self.income_measure], y=df.y_var)
         fig.data[0].hovertemplate = (
-            "z=%{x:$,.2f}<br>" + "z_m/z_bar" + "=%{y:.3f}<extra></extra>"
+            OUTPUT_LABELS[self.income_measure]
+            + "=%{x:$,.2f}<br>"
+            + y_string
+            + "=%{y:.3f}<extra></extra>"
         )
         fig.update_layout(
-            xaxis_title=r"$z$",
-            yaxis_title=r"$z_m / \bar{z}$",
+            xaxis_title=OUTPUT_LABELS[self.income_measure],
+            yaxis_title=y_string,
         )
         return fig
 
@@ -177,11 +199,58 @@ class iot_comparison:
         k = self.labels.index(policy)
         df = self.iot[k].df()
         # g1 with mtr_prime = 0
-        g1 = 1 + (df.theta_z * self.iot[k].inc_elast * df.mtr) / (1 - df.mtr)
-        # g2 with theta_z = 0
-        g2 = 1 + (
-            (self.iot[k].inc_elast * df.z * df.mtr_prime) / (1 - df.mtr) ** 2
+        g1 = (
+            0
+            + ((df.theta_z * self.iot[k].inc_elast * df.mtr) / (1 - df.mtr))
+            + ((self.iot[k].inc_elast * df.z * 0) / (1 - df.mtr) ** 2)
         )
-        y = [df.g_z, g1, g2]
-        fig = px.line(x=df.z, y=y)
+        # g2 with theta_z = 0
+        g2 = (
+            0
+            + ((0 * self.iot[k].inc_elast * df.mtr) / (1 - df.mtr))
+            + (
+                (self.iot[k].inc_elast * df.z * df.mtr_prime)
+                / (1 - df.mtr) ** 2
+            )
+        )
+        plot_df = pd.DataFrame(
+            {
+                self.income_measure: df.z,
+                "Overall weight": df.g_z,
+                "Tax Base Elasticity": df.g_z - g1,
+                "Nonconstant MTRs": df.g_z - g1 - g2,
+            }
+        )
+        fig = go.Figure()
+        fig.add_trace(
+            go.Scatter(
+                x=plot_df[self.income_measure],
+                y=plot_df["Overall weight"],
+                fill=None,
+                mode="lines",
+                name="Overall weight",
+            )
+        )
+        fig.add_trace(
+            go.Scatter(
+                x=plot_df[self.income_measure],
+                y=plot_df["Tax Base Elasticity"],
+                fill="tonexty",  # fill area between trace0 and trace1
+                mode="lines",
+                name="Tax Base Elasticity",
+            )
+        )
+        fig.add_trace(
+            go.Scatter(
+                x=plot_df[self.income_measure],
+                y=plot_df["Nonconstant MTRs"],
+                fill="tonexty",  # fill area between trace1 and trace2
+                mode="lines",
+                name="Nonconstant MTRs",
+            )
+        )
+        fig.update_layout(
+            xaxis_title=OUTPUT_LABELS[self.income_measure],
+            yaxis_title=r"$g_z$",
+        )
         return fig
