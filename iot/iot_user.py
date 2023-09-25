@@ -18,6 +18,8 @@ class iot_comparison:
     Args:
         year (int): year for analysis, see
             taxcalc.Calculator.advance_to_year
+        baseline_politicies (Tax-Calculator Policy object): baseline
+            policy upon which reform policies are layered
         policies (list): list of dicts or json files denoting policy
             parameter changes
         labels (list): list of string labels for each policy
@@ -45,6 +47,7 @@ class iot_comparison:
     def __init__(
         self,
         years=[CURRENT_YEAR],
+        baseline_policies=[None],
         policies=[],
         labels=[],
         data="CPS",
@@ -75,6 +78,7 @@ class iot_comparison:
                 gen_microdata(
                     year=years[i],
                     data=data,
+                    baseline_policy=baseline_policies[i],
                     reform=v,
                     mtr_wrt=mtr_wrt,
                     income_measure=income_measure,
