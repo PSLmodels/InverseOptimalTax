@@ -7,7 +7,7 @@ from statsmodels.nonparametric.kernel_regression import KernelReg
 
 class IOT:
     """
-    Constructor for thse IOT class.
+    Constructor for the IOT class.
 
     This IOT class can be used to compute the social welfare weights
     across the income distribution given data, tax policy parameters,
