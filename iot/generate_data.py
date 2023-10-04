@@ -1,5 +1,7 @@
 from email.mime import base
 import taxcalc as tc
+import numpy as np
+import pandas as pd
 
 
 def gen_microdata(
@@ -42,6 +44,16 @@ def gen_microdata(
         except:
             print("PUF data not found")
             return
+    elif data is None:
+        income_vec = np.linspace(0, 1000000, 10000)
+        wgts = np.ones_like(income_vec)
+        MARS = np.ones_like(income_vec)
+        df = pd.DataFrame({"e00200p": income_vec, "s006": wgts, "MARS": MARS})
+        df.reset_index(inplace=True)
+        df.rename(columns={"index": "REDID"}, inplace=True)
+        df["e00200s"] = 0
+        df["e00200p"] = df["e00200p"] + df["e00200s"]
+        recs = tc.Records(df)
     if baseline_policy:
         print("Using baseline passed in")
         pol1 = baseline_policy
