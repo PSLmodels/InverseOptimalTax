@@ -59,7 +59,7 @@ class IOT:
         bins = np.arange(
             start=lower_bound, stop=upper_bound + bandwidth, step=bandwidth
         )
-        data["z_bin"] = pd.cut(data[income_measure], bins, include_lowest=True)
+        data.loc[:, ["z_bin"]] = pd.cut(data[income_measure], bins, include_lowest=True)
         self.inc_elast = inc_elast
         self.z, self.f, self.f_prime = self.compute_income_dist(
             data, income_measure, weight_var, dist_type, kde_bw
@@ -185,12 +185,7 @@ class IOT:
         )
         z = data_group.values
 
-
         if dist_type == "log_normal":
-            print("Sum of weights = ", data[weight_var].sum())
-            print("min weight = ", data[weight_var].min())
-            print("min of income measure = ", data[income_measure].min())
-            print("max of income measure = ", data[income_measure].max())
             mu = (
                 np.log(data[income_measure] + 1) * data[weight_var]
             ).sum() / data[weight_var].sum()

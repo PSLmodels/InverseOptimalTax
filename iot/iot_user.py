@@ -71,9 +71,8 @@ class iot_comparison:
         df = []
         self.iot = []
         # inititalize list of dataframes and
-        # IOT class objects for each polciy
+        # IOT class objects for each policy
         self.labels = labels
-
         for i, v in enumerate(policies):
             df.append(
                 gen_microdata(
