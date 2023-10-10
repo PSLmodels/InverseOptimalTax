@@ -36,8 +36,12 @@ def test_IOT_df():
 
     assert isinstance(df_out, pd.DataFrame)
 
-
-def test_IOT_compute_mtr_dist():
+@pytest.mark.parametrize(
+    "mtr_smoother",
+    [("spline"), ("kr"), (None)
+     ]
+)
+def test_IOT_compute_mtr_dist(mtr_smoother):
     """
     Test computation of the mtr distribution
     """
@@ -66,14 +70,13 @@ def test_IOT_compute_mtr_dist():
     )
     data["z_bin"] = pd.cut(data[income_measure], bins, include_lowest=True)
     # create instance of IOT object
-    mtr_smoother = "spline"
     weight_var = "s006"
     # iot1 = IOT(df, dist_type="log_normal", mtr_smoother=mtr_smoother)
     iot1 = IOT(data)
     mtr, mtr_prime = iot1.compute_mtr_dist(data, weight_var, mtr_smoother, 3)
-    # np.savetxt(os.path.join(CUR_PATH, 'test_io_data', 'mtr.csv'), mtr, delimiter=",")
+    # np.savetxt(os.path.join(CUR_PATH, 'test_io_data', str(mtr_smoother) + '_mtr.csv'), mtr, delimiter=",")
     expected_mtr = np.genfromtxt(
-        os.path.join(CUR_PATH, "test_io_data", "mtr.csv"), delimiter=","
+        os.path.join(CUR_PATH, "test_io_data", str(mtr_smoother) + "_mtr.csv"), delimiter=","
     )
 
     assert np.allclose(mtr, expected_mtr)
@@ -120,7 +123,7 @@ def test_IOT_compute_income_dist(income_measure,dist_type):
     weight_var = "s006"
     iot1 = IOT(data, income_measure=income_measure)
     z, f, f_prime = iot1.compute_income_dist(data, income_measure, weight_var, dist_type=dist_type)
-    np.savetxt(os.path.join(CUR_PATH, "test_io_data", income_measure + "_" + str(dist_type) + "_dist.csv"), f, delimiter=",")
+    # np.savetxt(os.path.join(CUR_PATH, "test_io_data", income_measure + "_" + str(dist_type) + "_dist.csv"), f, delimiter=",")
     expected_dist = np.genfromtxt(
         os.path.join(CUR_PATH, "test_io_data", income_measure + "_" + str(dist_type) + "_dist.csv"), delimiter=","
     )
