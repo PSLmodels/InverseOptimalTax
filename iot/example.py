@@ -8,6 +8,7 @@ iot1 = iot_comparison(
         "https://raw.githubusercontent.com/PSLmodels/examples/main/psl_examples/taxcalc/Biden2020.json",
     ],
     labels=["2017 Law", "Biden 2020"],
+    years=[2017, 2020]
 )
 
 iot2 = iot_comparison(
@@ -16,6 +17,7 @@ iot2 = iot_comparison(
         "https://raw.githubusercontent.com/PSLmodels/examples/main/psl_examples/taxcalc/Biden2020.json",
     ],
     labels=["2017 Law", "Biden 2020"],
+    years=[2017, 2020],
     inc_elast=2,
 )
 

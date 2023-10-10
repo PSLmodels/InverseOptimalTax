@@ -18,7 +18,7 @@ class iot_comparison:
     Args:
         year (int): year for analysis, see
             taxcalc.Calculator.advance_to_year
-        baseline_politicies (Tax-Calculator Policy object): baseline
+        baseline_policies (Tax-Calculator Policy object): baseline
             policy upon which reform policies are layered
         policies (list): list of dicts or json files denoting policy
             parameter changes
@@ -59,7 +59,8 @@ class iot_comparison:
         bandwidth=1000,
         lower_bound=0,
         upper_bound=500000,
-        dist_type="kde_full",
+        # dist_type="kde_full",
+        dist_type="log_normal",
         kde_bw=None,
         mtr_smoother="spline",
         mtr_smooth_param=4,

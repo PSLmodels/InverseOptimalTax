@@ -170,30 +170,44 @@ class IOT:
                 * f_prime (array_like): slope of the density function for
                     income bin z
         """
-        data_group = (
-            data[[income_measure, "z_bin", weight_var]]
-            .groupby(["z_bin"])
-            .apply(
-                lambda x: np.average(x[income_measure], weights=x[weight_var])
-            )
-        )
-        z = data_group.values
+        def wm(x):
+            try:
+                return np.average(x, weights=data.loc[x.index, weight_var])
+            except ZeroDivisionError:
+                return 0
+        # data_group_old = (
+        #     data[[income_measure, "z_bin", weight_var]]
+        #     .groupby(["z_bin"])
+        #     .apply(
+        #         lambda x: np.average(x[income_measure], weights=x[weight_var])
+        #     )
+        # )
+        f = {income_measure: wm}
+        data_group = data.groupby(["z_bin"], as_index=False).agg(f)
+        z = data_group.values[:, 1]
 
         if dist_type == "log_normal":
+            print("Sum of weights = ", data[weight_var].sum())
+            print("min weight = ", data[weight_var].min())
+            print("min of income measure = ", data[income_measure].min())
+            print("max of income measure = ", data[income_measure].max())
             mu = (
-                np.log(data[income_measure]) * data[weight_var]
+                np.log(data[income_measure] + 1) * data[weight_var]
             ).sum() / data[weight_var].sum()
             sigmasq = (
-                (((np.log(data[income_measure]) - mu) ** 2) * data[weight_var])
+                (((np.log(data[income_measure] + 1) - mu) ** 2) * data[weight_var]).values
                 / data[weight_var].sum()
             ).sum()
+            print("Type mu = ", type(mu))
             f = st.lognorm.pdf(z, s=(sigmasq) ** 0.5, scale=np.exp(mu))
         elif dist_type == "kde_full":
             # uses the original full data for kde estimation
+            print(self.data_original[income_measure].dtype)
+            print(self.data_original[weight_var].dtype)
             f_function = st.gaussian_kde(
-                self.data_original[income_measure],
+                self.data_original[income_measure].values,
                 bw_method=kde_bw,
-                weights=self.data_original[weight_var],
+                weights=self.data_original[weight_var].values,
             )
             f = f_function(z)
         elif dist_type == "kde_subset":
