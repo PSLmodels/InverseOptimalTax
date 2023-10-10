@@ -117,7 +117,7 @@ class IOT:
         data_group = (
             data[["mtr", "z_bin", weight_var]]
             .groupby(["z_bin"])
-            .apply(lambda x: np.average(x["mtr"], weights=x[weight_var]))
+            .apply(lambda x: wm(x["mtr"], x[weight_var]))
         )
         if mtr_smoother == "spline":
             spl = UnivariateSpline(
@@ -170,12 +170,6 @@ class IOT:
                 * f_prime (array_like): slope of the density function for
                     income bin z
         """
-        def wm(value, weight):
-            try:
-                return np.average(value, weights=weight)
-            except ZeroDivisionError:
-                return 0
-
         data_group = (
             data[[income_measure, "z_bin", weight_var]]
             .groupby(["z_bin"])
@@ -253,3 +247,20 @@ class IOT:
         )
 
         return g_z
+
+
+def wm(value, weight):
+    """
+    Weighted mean function that allows for zero division
+
+    Args:
+        value (array_like): values to be averaged
+        weight (array_like): weights for each value
+
+    Returns:
+        scalar: weighted average
+    """
+    try:
+        return np.average(value, weights=weight)
+    except ZeroDivisionError:
+        return 0
