@@ -170,21 +170,21 @@ class IOT:
                 * f_prime (array_like): slope of the density function for
                     income bin z
         """
-        def wm(x):
+        def wm(value, weight):
             try:
-                return np.average(x, weights=data.loc[x.index, weight_var])
+                return np.average(value, weights=weight)
             except ZeroDivisionError:
                 return 0
-        # data_group_old = (
-        #     data[[income_measure, "z_bin", weight_var]]
-        #     .groupby(["z_bin"])
-        #     .apply(
-        #         lambda x: np.average(x[income_measure], weights=x[weight_var])
-        #     )
-        # )
-        f = {income_measure: wm}
-        data_group = data.groupby(["z_bin"], as_index=False).agg(f)
-        z = data_group.values[:, 1]
+
+        data_group = (
+            data[[income_measure, "z_bin", weight_var]]
+            .groupby(["z_bin"])
+            .apply(
+                lambda x: wm(x[income_measure], x[weight_var])
+            )
+        )
+        z = data_group.values
+
 
         if dist_type == "log_normal":
             print("Sum of weights = ", data[weight_var].sum())
