@@ -82,11 +82,48 @@ def test_IOT_compute_mtr_dist():
 # In tests above and below, will need to experiment with different
 # income measures and lower and upper bounds (625000 seems to be limit so far)
 # may need to do something with bins with no observations in them
+@pytest.mark.parametrize(
+    "income_measure",
+    [("expanded_income"), ("e00200")]
+)
+def test_IOT_compute_income_dist(income_measure):
+    """
+    Test the computation of the income distribution
+    """
+    pol = taxcalc.policy.Policy()
+    rec = taxcalc.records.Records.cps_constructor()
+    calc = taxcalc.calculator.Calculator(policy=pol, records=rec)
+    calc.advance_to_year(2022)
+    calc.calc_all()
+    data = calc.dataframe(["s006", income_measure, "XTOT", "combined"])
+    upper_bound = 500000
+    lower_bound = 0
+    bandwidth = 1000
+    (_, _, mtr1) = calc.mtr(
+        "e00200p", calc_all_already_called=True, wrt_full_compensation=False
+    )
+    data["mtr"] = mtr1
+    # clean data based on upper and lower bounds
+    data = data[
+        (data[income_measure] >= lower_bound)
+        & (data[income_measure] <= upper_bound)
+    ]
+    # create bins for analysis
+    bins = np.arange(
+        start=lower_bound, stop=upper_bound + bandwidth, step=bandwidth
+    )
+    data["z_bin"] = pd.cut(data[income_measure], bins, include_lowest=True)
+    # create instance of IOT object
+    weight_var = "s006"
+    iot1 = IOT(data, income_measure=income_measure)
+    z, f, f_prime = iot1.compute_income_dist(data, income_measure, weight_var, dist_type="log_normal")
+    np.savetxt(os.path.join(CUR_PATH, "test_io_data", income_measure + "_dist.csv"), f, delimiter=",")
+    expected_dist = np.genfromtxt(
+        os.path.join(CUR_PATH, "test_io_data", income_measure + "_dist.csv"), delimiter=","
+    )
 
-# def test_IOT_compute_income_dist():
-#     """
-#     Test the computation of the income distribution
-#     """
+    assert np.allclose(f, expected_dist)
+
 
 
 pol = taxcalc.policy.Policy()
