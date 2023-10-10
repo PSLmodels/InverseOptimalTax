@@ -83,10 +83,13 @@ def test_IOT_compute_mtr_dist():
 # income measures and lower and upper bounds (625000 seems to be limit so far)
 # may need to do something with bins with no observations in them
 @pytest.mark.parametrize(
-    "income_measure",
-    [("expanded_income"), ("e00200")]
+    "income_measure,dist_type",
+    [("expanded_income", None), ("e00200", None),
+     ("e00200", "log_normal"), ("e00200", "kde_full"),
+     ("e00200", "kde_subset")
+     ]
 )
-def test_IOT_compute_income_dist(income_measure):
+def test_IOT_compute_income_dist(income_measure,dist_type):
     """
     Test the computation of the income distribution
     """
@@ -116,10 +119,10 @@ def test_IOT_compute_income_dist(income_measure):
     # create instance of IOT object
     weight_var = "s006"
     iot1 = IOT(data, income_measure=income_measure)
-    z, f, f_prime = iot1.compute_income_dist(data, income_measure, weight_var, dist_type="log_normal")
-    np.savetxt(os.path.join(CUR_PATH, "test_io_data", income_measure + "_dist.csv"), f, delimiter=",")
+    z, f, f_prime = iot1.compute_income_dist(data, income_measure, weight_var, dist_type=dist_type)
+    np.savetxt(os.path.join(CUR_PATH, "test_io_data", income_measure + "_" + str(dist_type) + "_dist.csv"), f, delimiter=",")
     expected_dist = np.genfromtxt(
-        os.path.join(CUR_PATH, "test_io_data", income_measure + "_dist.csv"), delimiter=","
+        os.path.join(CUR_PATH, "test_io_data", income_measure + "_" + str(dist_type) + "_dist.csv"), delimiter=","
     )
 
     assert np.allclose(f, expected_dist)
