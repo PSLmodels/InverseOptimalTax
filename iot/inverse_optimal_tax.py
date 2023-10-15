@@ -119,6 +119,13 @@ class IOT:
             .groupby(["z_bin"])
             .apply(lambda x: wm(x["mtr"], x[weight_var]))
         )
+        data_group.interpolate(
+            method="linear",
+            axis=0,
+            limit_direction="both",
+            limit_area="inside",
+            inplace=True
+        )
         if mtr_smoother == "spline":
             spl = UnivariateSpline(
                 self.z, data_group.values, k=mtr_smooth_param
@@ -137,8 +144,9 @@ class IOT:
             mtr, _ = mtr_function.fit(self.z)
         else:
             mtr = data_group.values
-        mtr_prime = np.diff(mtr) / np.diff(self.z)
-        mtr_prime = np.append(mtr_prime, mtr_prime[-1])
+        mtr_prime = np.gradient(mtr)
+        # mtr_prime = np.diff(mtr) / np.diff(self.z)
+        # mtr_prime = np.append(mtr_prime, mtr_prime[-1])
 
         return mtr, mtr_prime
 
@@ -177,6 +185,14 @@ class IOT:
                 lambda x: wm(x[income_measure], x[weight_var])
             )
         )
+        # interpolate values for bins with no obs
+        data_group.interpolate(
+            method="linear",
+            axis=0,
+            limit_direction="both",
+            limit_area="inside",
+            inplace=True
+        )
         z = data_group.values
 
         if dist_type == "log_normal":
@@ -214,9 +230,10 @@ class IOT:
             )[weight_var].values
         # normalize f
         f = f / np.sum(f)
-        f_prime = np.diff(f) / np.diff(z)
-        # assume diff between last bin and next is the same as before
-        f_prime = np.append(f_prime, f_prime[-1])
+        f_prime = np.gradient(f) # this works a bit better than finite differences, but still not great
+        # f_prime = np.diff(f) / np.diff(z)
+        # # assume diff between last bin and next is the same as before
+        # f_prime = np.append(f_prime, f_prime[-1])
 
         return z, f, f_prime
 
@@ -263,4 +280,4 @@ def wm(value, weight):
     try:
         return np.average(value, weights=weight)
     except ZeroDivisionError:
-        return 0
+        return np.nan
