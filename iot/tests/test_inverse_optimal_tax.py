@@ -36,11 +36,8 @@ def test_IOT_df():
 
     assert isinstance(df_out, pd.DataFrame)
 
-@pytest.mark.parametrize(
-    "mtr_smoother",
-    [("spline"), ("kr"), (None)
-     ]
-)
+
+@pytest.mark.parametrize("mtr_smoother", [("spline"), ("kr"), (None)])
 def test_IOT_compute_mtr_dist(mtr_smoother):
     """
     Test computation of the mtr distribution
@@ -76,7 +73,8 @@ def test_IOT_compute_mtr_dist(mtr_smoother):
     mtr, mtr_prime = iot1.compute_mtr_dist(data, weight_var, mtr_smoother, 3)
     # np.savetxt(os.path.join(CUR_PATH, 'test_io_data', str(mtr_smoother) + '_mtr.csv'), mtr, delimiter=",")
     expected_mtr = np.genfromtxt(
-        os.path.join(CUR_PATH, "test_io_data", str(mtr_smoother) + "_mtr.csv"), delimiter=","
+        os.path.join(CUR_PATH, "test_io_data", str(mtr_smoother) + "_mtr.csv"),
+        delimiter=",",
     )
 
     assert np.allclose(mtr, expected_mtr)
@@ -87,12 +85,15 @@ def test_IOT_compute_mtr_dist(mtr_smoother):
 # may need to do something with bins with no observations in them
 @pytest.mark.parametrize(
     "income_measure,dist_type",
-    [("expanded_income", None), ("e00200", None),
-     ("e00200", "log_normal"), ("e00200", "kde_full"),
-     ("e00200", "kde_subset")
-     ]
+    [
+        ("expanded_income", None),
+        ("e00200", None),
+        ("e00200", "log_normal"),
+        ("e00200", "kde_full"),
+        ("e00200", "kde_subset"),
+    ],
 )
-def test_IOT_compute_income_dist(income_measure,dist_type):
+def test_IOT_compute_income_dist(income_measure, dist_type):
     """
     Test the computation of the income distribution
     """
@@ -122,14 +123,20 @@ def test_IOT_compute_income_dist(income_measure,dist_type):
     # create instance of IOT object
     weight_var = "s006"
     iot1 = IOT(data, income_measure=income_measure)
-    z, f, f_prime = iot1.compute_income_dist(data, income_measure, weight_var, dist_type=dist_type)
+    z, f, f_prime = iot1.compute_income_dist(
+        data, income_measure, weight_var, dist_type=dist_type
+    )
     # np.savetxt(os.path.join(CUR_PATH, "test_io_data", income_measure + "_" + str(dist_type) + "_dist.csv"), f, delimiter=",")
     expected_dist = np.genfromtxt(
-        os.path.join(CUR_PATH, "test_io_data", income_measure + "_" + str(dist_type) + "_dist.csv"), delimiter=","
+        os.path.join(
+            CUR_PATH,
+            "test_io_data",
+            income_measure + "_" + str(dist_type) + "_dist.csv",
+        ),
+        delimiter=",",
     )
 
     assert np.allclose(f, expected_dist)
-
 
 
 pol = taxcalc.policy.Policy()
@@ -182,32 +189,46 @@ def test_sw_weights_analytical():
     beta = 10000
     mtr = 0.15
     elasticity = 0.4
+
     def f_z_exp(z, beta):
-        return (1/beta) * np.exp(-z/beta)
+        return (1 / beta) * np.exp(-z / beta)
+
     def f_prime_z_exp(z, beta):
-        return (-1/(beta ** 2)) * np.exp(-z/beta)
+        return (-1 / (beta**2)) * np.exp(-z / beta)
+
     def theta_z_exp(z, beta):
-        return 1 - (z/ beta)
+        return 1 - (z / beta)
+
     def g_z_exp(z, beta, elasticity, mtr):
         theta = theta_z_exp(z, beta)
-        g_z_exp = (1 + theta * elasticity * (mtr / (1 - mtr)))
+        g_z_exp = 1 + theta * elasticity * (mtr / (1 - mtr))
         return g_z_exp
+
     # Find test value for g_z
     # generate income according to exponential distribution
     z = np.random.exponential(beta, 100000)
     # sort z -- not sure it matters
     z.sort()
-    dict_in = {"e00200p": z, "e00200s": np.zeros_like(z), "e00200": z,
-               "s006": np.ones_like(z), "XTOT": np.ones_like(z), "MARS": np.ones_like(z),
-               "mtr": np.ones_like(z) * mtr}
+    dict_in = {
+        "e00200p": z,
+        "e00200s": np.zeros_like(z),
+        "e00200": z,
+        "s006": np.ones_like(z),
+        "XTOT": np.ones_like(z),
+        "MARS": np.ones_like(z),
+        "mtr": np.ones_like(z) * mtr,
+    }
     df = pd.DataFrame(dict_in)
     # create instance of IOT object
-    mtr_smoother =  None
+    mtr_smoother = None
     weight_var = "s006"
     iot_test = IOT(
-        df, income_measure="e00200", dist_type="kde",
-        mtr_smoother=mtr_smoother, mtr_smooth_param=3,
-        upper_bound=80000
+        df,
+        income_measure="e00200",
+        dist_type="kde",
+        mtr_smoother=mtr_smoother,
+        mtr_smooth_param=3,
+        upper_bound=80000,
     )
     # Noting the theta_z differ from the exponential distribution
     g_z_test = iot_test.sw_weights()

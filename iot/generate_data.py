@@ -65,7 +65,7 @@ def gen_microdata(
 
     pol1.implement_reform(reform, print_warnings=False, raise_errors=False)
 
-    print('RRC phaseout = ', dict(pol1.items())['RRC_ps'])
+    print("RRC phaseout = ", dict(pol1.items())["RRC_ps"])
 
     calc1 = tc.Calculator(policy=pol1, records=recs)
     calc1.advance_to_year(year)

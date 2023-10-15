@@ -47,7 +47,6 @@ class IOT:
         mtr_smoother="spline",
         mtr_smooth_param=4,
     ):
-
         # keep the original data intact
         self.data_original = data.copy()
         # clean data based on upper and lower bounds
@@ -59,7 +58,9 @@ class IOT:
         bins = np.arange(
             start=lower_bound, stop=upper_bound + bandwidth, step=bandwidth
         )
-        data.loc[:, ["z_bin"]] = pd.cut(data[income_measure], bins, include_lowest=True)
+        data.loc[:, ["z_bin"]] = pd.cut(
+            data[income_measure], bins, include_lowest=True
+        )
         self.inc_elast = inc_elast
         self.z, self.f, self.f_prime = self.compute_income_dist(
             data, income_measure, weight_var, dist_type, kde_bw
@@ -124,7 +125,7 @@ class IOT:
             axis=0,
             limit_direction="both",
             limit_area="inside",
-            inplace=True
+            inplace=True,
         )
         if mtr_smoother == "spline":
             spl = UnivariateSpline(
@@ -181,9 +182,7 @@ class IOT:
         data_group = (
             data[[income_measure, "z_bin", weight_var]]
             .groupby(["z_bin"])
-            .apply(
-                lambda x: wm(x[income_measure], x[weight_var])
-            )
+            .apply(lambda x: wm(x[income_measure], x[weight_var]))
         )
         # interpolate values for bins with no obs
         data_group.interpolate(
@@ -191,7 +190,7 @@ class IOT:
             axis=0,
             limit_direction="both",
             limit_area="inside",
-            inplace=True
+            inplace=True,
         )
         z = data_group.values
 
@@ -200,7 +199,10 @@ class IOT:
                 np.log(data[income_measure] + 1) * data[weight_var]
             ).sum() / data[weight_var].sum()
             sigmasq = (
-                (((np.log(data[income_measure] + 1) - mu) ** 2) * data[weight_var]).values
+                (
+                    ((np.log(data[income_measure] + 1) - mu) ** 2)
+                    * data[weight_var]
+                ).values
                 / data[weight_var].sum()
             ).sum()
             print("Type mu = ", type(mu))
@@ -230,7 +232,9 @@ class IOT:
             )[weight_var].values
         # normalize f
         f = f / np.sum(f)
-        f_prime = np.gradient(f) # this works a bit better than finite differences, but still not great
+        f_prime = np.gradient(
+            f
+        )  # this works a bit better than finite differences, but still not great
         # f_prime = np.diff(f) / np.diff(z)
         # # assume diff between last bin and next is the same as before
         # f_prime = np.append(f_prime, f_prime[-1])

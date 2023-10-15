@@ -7,19 +7,20 @@ iot1 = iot_comparison(
         "https://raw.githubusercontent.com/PSLmodels/examples/main/psl_examples/taxcalc/2017_law.json",
         "https://raw.githubusercontent.com/PSLmodels/examples/main/psl_examples/taxcalc/Biden2020.json",
     ],
-    labels=["2017 Law", "Biden 2020"],
-    years=[2017, 2020]
-)
-
-iot2 = iot_comparison(
-    policies=[
-        "https://raw.githubusercontent.com/PSLmodels/examples/main/psl_examples/taxcalc/2017_law.json",
-        "https://raw.githubusercontent.com/PSLmodels/examples/main/psl_examples/taxcalc/Biden2020.json",
-    ],
+    baseline_policies=[None, None],
     labels=["2017 Law", "Biden 2020"],
     years=[2017, 2020],
-    inc_elast=2,
 )
+
+# iot2 = iot_comparison(
+#     policies=[
+#         "https://raw.githubusercontent.com/PSLmodels/examples/main/psl_examples/taxcalc/2017_law.json",
+#         "https://raw.githubusercontent.com/PSLmodels/examples/main/psl_examples/taxcalc/Biden2020.json",
+#     ],
+#     labels=["2017 Law", "Biden 2020"],
+#     years=[2017, 2020],
+#     inc_elast=2,
+# )
 
 # %%
 iot1.iot[-1].df().head()
