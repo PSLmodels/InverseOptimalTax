@@ -166,3 +166,54 @@ def test_IOT_sw_weights(iot, expected_g_z):
     """
     g_z = iot.sw_weights()
     assert np.allclose(g_z, expected_g_z)
+
+
+def test_sw_weights_analytical():
+    """
+    A test of the sw_weights function using a special case where their
+    is an analytical solution.
+
+    The special case involves the following assumptions:
+    1. A constant marginal tax rate (so that T''(z) = 0)
+    2. An exponential distribution in z, so that f(z) = 1/beta * exp(-z/beta)
+    f'(z) = -1/(beta ** 2) * exp(-z/beta)
+    theta(z) = 1 + (z f'(z) / f(z)) = 1 - z/beta
+    """
+    beta = 10000
+    mtr = 0.15
+    elasticity = 0.4
+    def f_z_exp(z, beta):
+        return (1/beta) * np.exp(-z/beta)
+    def f_prime_z_exp(z, beta):
+        return (-1/(beta ** 2)) * np.exp(-z/beta)
+    def theta_z_exp(z, beta):
+        return 1 - (z/ beta)
+    def g_z_exp(z, beta, elasticity, mtr):
+        theta = theta_z_exp(z, beta)
+        g_z_exp = (1 + theta * elasticity * (mtr / (1 - mtr)))
+        return g_z_exp
+    # Find test value for g_z
+    # generate income according to exponential distribution
+    z = np.random.exponential(beta, 100000)
+    # sort z -- not sure it matters
+    z.sort()
+    dict_in = {"e00200p": z, "e00200s": np.zeros_like(z), "e00200": z,
+               "s006": np.ones_like(z), "XTOT": np.ones_like(z), "MARS": np.ones_like(z),
+               "mtr": np.ones_like(z) * mtr}
+    df = pd.DataFrame(dict_in)
+    # create instance of IOT object
+    mtr_smoother =  None
+    weight_var = "s006"
+    iot_test = IOT(
+        df, income_measure="e00200", dist_type="kde",
+        mtr_smoother=mtr_smoother, mtr_smooth_param=3,
+        upper_bound=80000
+    )
+    # Noting the theta_z differ from the exponential distribution
+    g_z_test = iot_test.sw_weights()
+    g_z_expected = g_z_exp(iot_test.z, beta, elasticity, mtr)
+    # getting negative values from iot_test.theta_z -- that shouldn't happen with
+    # the exponential distribution (or maybe any distribution)
+    # f(z) looks ok, issue is therfore probably with f'(z)
+
+    assert np.allclose(g_z_test, g_z_expected)
