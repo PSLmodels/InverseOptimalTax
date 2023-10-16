@@ -5,6 +5,7 @@ from scipy.interpolate import UnivariateSpline
 from statsmodels.nonparametric.kernel_regression import KernelReg
 from sklearn.kernel_ridge import KernelRidge
 
+
 class IOT:
     """
     Constructor for the IOT class.
@@ -119,12 +120,19 @@ class IOT:
         data = data.sort_values(by=income_measure)
         if mtr_smoother == "spline":
             spl = UnivariateSpline(
-                data[income_measure], data["mtr"], w=data[weight_var], k=mtr_smooth_param
+                data[income_measure],
+                data["mtr"],
+                w=data[weight_var],
+                k=mtr_smooth_param,
             )
             mtr = spl(self.z)
         elif mtr_smoother == "kr":
             krr = KernelRidge(alpha=1.0)
-            krr.fit(data[income_measure], data["mtr"], sample_weight=data[weight_var])
+            krr.fit(
+                data[income_measure],
+                data["mtr"],
+                sample_weight=data[weight_var],
+            )
             mtr = krr.predict(self.z)
         else:
             pass
@@ -196,7 +204,9 @@ class IOT:
             assert False
         # normalize f
         f = f / np.sum(f)
-        f_prime = np.gradient(f, edge_order=2)  # this works a bit better than finite differences, but still not great
+        f_prime = np.gradient(
+            f, edge_order=2
+        )  # this works a bit better than finite differences, but still not great
 
         return z_line, f, f_prime
 
