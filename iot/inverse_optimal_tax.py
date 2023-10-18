@@ -116,22 +116,22 @@ class IOT:
                 * mtr_prime (array_like): rate of change in marginal tax rates
                     for each income bin
         """
-        # sort dataframe on income
-        data = data.sort_values(by=income_measure)
+        # get rid of duplicate values of income
+        data = data.groupby(income_measure).mean().reset_index()
         if mtr_smoother == "spline":
             spl = UnivariateSpline(
                 data[income_measure],
                 data["mtr"],
                 w=data[weight_var],
                 k=mtr_smooth_param,
+                s=len(data[weight_var]) * 6300
             )
-            mtr = spl(self.z)
         elif mtr_smoother == "kr":
             krr = KernelRidge(alpha=1.0)
             krr.fit(
-                data[income_measure],
-                data["mtr"],
-                sample_weight=data[weight_var],
+                data[income_measure].values.reshape(-1, 1),
+                data["mtr"].values,
+                sample_weight=data[weight_var].values,
             )
             mtr = krr.predict(self.z)
         else:
@@ -181,8 +181,8 @@ class IOT:
                 ).values
                 / data[weight_var].sum()
             ).sum()
-            print("Type mu = ", mu)
-            print("Type sigma = ", np.sqrt(sigmasq))
+            print("mu = ", mu)
+            print("sigma = ", np.sqrt(sigmasq))
             f = st.lognorm.pdf(z_line, s=(sigmasq) ** 0.5, scale=np.exp(mu))
         elif dist_type == "kde_full":
             # uses the original full data for kde estimation
