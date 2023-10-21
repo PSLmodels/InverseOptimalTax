@@ -4,6 +4,9 @@ import scipy.stats as st
 from scipy.interpolate import UnivariateSpline
 from statsmodels.nonparametric.kernel_regression import KernelReg
 from sklearn.kernel_ridge import KernelRidge
+from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import PolynomialFeatures
+import plotly.express as px
 
 
 class IOT:
@@ -46,7 +49,7 @@ class IOT:
         dist_type="kde_full",
         kde_bw=None,
         mtr_smoother="spline",
-        mtr_smooth_param=4,
+        mtr_smooth_param=3,
     ):
         # keep the original data intact
         self.data_original = data.copy()
@@ -116,9 +119,10 @@ class IOT:
                 * mtr_prime (array_like): rate of change in marginal tax rates
                     for each income bin
         """
-        # get rid of duplicate values of income
-        data = data.groupby(income_measure).mean().reset_index()
+
         if mtr_smoother == "spline":
+            # get rid of duplicate values of income
+            data = data[[income_measure, weight_var, "mtr"]].groupby(income_measure).mean().reset_index()
             spl = UnivariateSpline(
                 data[income_measure],
                 data["mtr"],
@@ -126,7 +130,19 @@ class IOT:
                 k=mtr_smooth_param,
                 s=len(data[weight_var]) * 6300
             )
+            mtr = spl(self.z)
+            # try running through another spline to see what happens
+            spl = UnivariateSpline(
+                self.z,
+                mtr,
+                w=None,
+                k=mtr_smooth_param,
+                s=len(mtr)
+            )
+            mtr = spl(self.z)
         elif mtr_smoother == "kr":
+            # get rid of duplicate values of income
+            data = data[[income_measure, weight_var, "mtr"]].groupby(income_measure).mean().reset_index()
             krr = KernelRidge(alpha=1.0)
             krr.fit(
                 data[income_measure].values.reshape(-1, 1),
@@ -134,8 +150,28 @@ class IOT:
                 sample_weight=data[weight_var].values,
             )
             mtr = krr.predict(self.z)
+        # elif mtr_smoother == "kreg":
+        #     mtr_function = KernelReg(
+        #         data_group.values,
+        #         self.z,
+        #         var_type="c",
+        #         reg_type="ll",
+        #         bw=[mtr_smooth_param],
+        #         ckertype="gaussian",
+        #         defaults=None,
+        #     )
+        #     mtr, _ = mtr_function.fit(self.z)
+        elif mtr_smoother == "poly":
+            poly = PolynomialFeatures(degree=20, include_bias=False)
+            poly_features = poly.fit_transform(data[income_measure].values.reshape(-1,1))
+            poly_reg_model = LinearRegression()
+            poly_reg_model.fit(poly_features, data["mtr"], data[weight_var])
+            z_poly = poly.fit_transform(self.z.reshape(-1, 1))
+            mtr = poly_reg_model.predict(z_poly)
+            px.line(x=self.z, y=mtr).show()
         else:
-            pass
+            print('Please enter a value mtr_smoother method')
+            assert False
         mtr_prime = np.gradient(mtr, edge_order=2)
 
         return mtr, mtr_prime
@@ -181,8 +217,8 @@ class IOT:
                 ).values
                 / data[weight_var].sum()
             ).sum()
-            print("mu = ", mu)
-            print("sigma = ", np.sqrt(sigmasq))
+            # print("mu = ", mu)
+            # print("sigma = ", np.sqrt(sigmasq))
             f = st.lognorm.pdf(z_line, s=(sigmasq) ** 0.5, scale=np.exp(mu))
         elif dist_type == "kde_full":
             # uses the original full data for kde estimation
@@ -201,6 +237,7 @@ class IOT:
             )
             f = f_function.pdf(z_line)
         else:
+            print('Please enter a valid value for dist_type')
             assert False
         # normalize f
         f = f / np.sum(f)

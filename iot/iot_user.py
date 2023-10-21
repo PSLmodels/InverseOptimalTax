@@ -53,7 +53,7 @@ class iot_comparison:
         data="CPS",
         compare_default=True,
         mtr_wrt="e00200p",
-        income_measure="expanded_income",
+        income_measure="e00200",
         weight_var="s006",
         inc_elast=0.25,
         bandwidth=1000,
