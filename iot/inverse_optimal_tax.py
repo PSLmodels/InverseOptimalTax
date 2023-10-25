@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import scipy.stats as st
+import scipy
 from scipy.interpolate import UnivariateSpline
 from statsmodels.nonparametric.kernel_regression import KernelReg
 from sklearn.kernel_ridge import KernelRidge
@@ -66,7 +67,7 @@ class IOT:
         #     data[income_measure], bins, include_lowest=True
         # )
         self.inc_elast = inc_elast
-        self.z, self.f, self.f_prime = self.compute_income_dist(
+        self.z, self.F, self.f, self.f_prime = self.compute_income_dist(
             data, income_measure, weight_var, dist_type, kde_bw
         )
         self.mtr, self.mtr_prime = self.compute_mtr_dist(
@@ -195,11 +196,14 @@ class IOT:
             ).sum()
             # print("mu = ", mu)
             # print("sigma = ", np.sqrt(sigmasq))
+            # F = st.lognorm.cdf(z_line, s=(sigmasq) ** 0.5, scale=np.exp(mu))
             # f = st.lognorm.pdf(z_line, s=(sigmasq) ** 0.5, scale=np.exp(mu))
             # f = f / np.sum(f)
+            # f_prime = np.gradient(f, edge_order=2)
 
             # analytical derivative of lognormal
             sigma = np.sqrt(sigmasq)
+            F = (1 / 2) * (1 + scipy.special.erf((np.log(z_line) - mu) / (np.sqrt(2) * sigma)))
             f = (
                 (1 / np.sqrt(2 * np.pi * sigma))
                 * np.exp(-((np.log(z_line) - mu) ** 2) / (2 * sigma**2))
@@ -219,16 +223,15 @@ class IOT:
                 # bw_method=kde_bw,
                 weights=data[weight_var],
             )
+            F = f_function.cdf(z_line)
             f = f_function.pdf(z_line)
             f = f / np.sum(f)
-            f_prime = np.gradient(
-            f, edge_order=2
-        )
+            f_prime = np.gradient(f, edge_order=2)
         else:
             print('Please enter a valid value for dist_type')
             assert False
 
-        return z_line, f, f_prime
+        return z_line, F, f, f_prime
 
     def sw_weights(self):
         r"""
@@ -247,15 +250,28 @@ class IOT:
             array_like: vector of social welfare weights across
             the income distribution
         """
-        g_z = (
-            1
-            + ((self.theta_z * self.inc_elast * self.mtr) / (1 - self.mtr))
-            + (
-                (self.inc_elast * self.z * self.mtr_prime)
-                / (1 - self.mtr) ** 2
+        method = "LW"
+        if method == "JJZ":
+            g_z = (
+                1
+                + ((self.theta_z * self.inc_elast * self.mtr) / (1 - self.mtr))
+                + (
+                    (self.inc_elast * self.z * self.mtr_prime)
+                    / (1 - self.mtr) ** 2
+                )
             )
-        )
-
+        elif method == "LW":  # use Lockwood and Weinzierl formula
+            print('F max and sum is: ", ', self.F.max(), self.F.sum(), self.F[-1])
+            bracket_term = (1 - self.F - (self.mtr / (1-self.mtr)) * self.inc_elast * self.z * self.f)
+            d_dz_bracket = np.gradient(bracket_term, edge_order=2)
+            g_z = (
+                - (1 / self.f) * d_dz_bracket)
+            g_z[:10] = g_z[10] # some issue at the bottom of the distribution
+            # normalize so sum to one
+            g_z = g_z / (g_z * self.f).sum()
+        else:
+            print('Please enter a valid value for method')
+            assert False
         return g_z
 
 
