@@ -40,15 +40,15 @@ class IOT:
     def __init__(
         self,
         data,
-        income_measure="expanded_income",
+        income_measure="e00200",
         weight_var="s006",
         inc_elast=0.25,
         bandwidth=1000,
         lower_bound=0,
         upper_bound=500000,
-        dist_type="kde_full",
+        dist_type="log_normal",
         kde_bw=None,
-        mtr_smoother="spline",
+        mtr_smoother="kreg",
         mtr_smooth_param=3,
     ):
         # keep the original data intact
@@ -59,12 +59,12 @@ class IOT:
         #     & (data[income_measure] <= upper_bound)
         # ]
         # create bins for analysis
-        bins = np.arange(
-            start=lower_bound, stop=upper_bound + bandwidth, step=bandwidth
-        )
-        data.loc[:, ["z_bin"]] = pd.cut(
-            data[income_measure], bins, include_lowest=True
-        )
+        # bins = np.arange(
+        #     start=lower_bound, stop=upper_bound + bandwidth, step=bandwidth
+        # )
+        # data.loc[:, ["z_bin"]] = pd.cut(
+        #     data[income_measure], bins, include_lowest=True
+        # )
         self.inc_elast = inc_elast
         self.z, self.f, self.f_prime = self.compute_income_dist(
             data, income_measure, weight_var, dist_type, kde_bw
@@ -119,56 +119,31 @@ class IOT:
                 * mtr_prime (array_like): rate of change in marginal tax rates
                     for each income bin
         """
-
-        if mtr_smoother == "spline":
-            # get rid of duplicate values of income
-            data = data[[income_measure, weight_var, "mtr"]].groupby(income_measure).mean().reset_index()
-            spl = UnivariateSpline(
-                data[income_measure],
-                data["mtr"],
-                w=data[weight_var],
-                k=mtr_smooth_param,
-                s=len(data[weight_var]) * 6300
+        bins = 1000  # number of equal-width bins
+        data.loc[:, ["z_bin"]] = pd.cut(
+                    data[income_measure], bins, include_lowest=True
+                )
+        binned_data = pd.DataFrame(
+                    data[["mtr", income_measure, "z_bin", weight_var]]
+                    .groupby(["z_bin"])
+                    .apply(lambda x: wm(x[["mtr", income_measure]], x[weight_var]))
+                )
+        # make column 0 into two columns
+        binned_data[['mtr', income_measure]] = pd.DataFrame(binned_data[0].tolist(), index= binned_data.index)
+        binned_data.drop(columns=0, inplace=True)
+        binned_data.reset_index(inplace=True)
+        if mtr_smoother == "kreg":
+            mtr_function = KernelReg(
+                binned_data["mtr"].dropna(),
+                binned_data[income_measure].dropna(),
+                var_type="c",
+                reg_type="ll",
             )
-            mtr = spl(self.z)
-            # try running through another spline to see what happens
-            spl = UnivariateSpline(
-                self.z,
-                mtr,
-                w=None,
-                k=mtr_smooth_param,
-                s=len(mtr)
-            )
-            mtr = spl(self.z)
-        elif mtr_smoother == "kr":
-            # get rid of duplicate values of income
-            data = data[[income_measure, weight_var, "mtr"]].groupby(income_measure).mean().reset_index()
-            krr = KernelRidge(alpha=1.0)
-            krr.fit(
-                data[income_measure].values.reshape(-1, 1),
-                data["mtr"].values,
-                sample_weight=data[weight_var].values,
-            )
-            mtr = krr.predict(self.z)
-        # elif mtr_smoother == "kreg":
-        #     mtr_function = KernelReg(
-        #         data_group.values,
-        #         self.z,
-        #         var_type="c",
-        #         reg_type="ll",
-        #         bw=[mtr_smooth_param],
-        #         ckertype="gaussian",
-        #         defaults=None,
-        #     )
-        #     mtr, _ = mtr_function.fit(self.z)
-        elif mtr_smoother == "poly":
-            poly = PolynomialFeatures(degree=20, include_bias=False)
-            poly_features = poly.fit_transform(data[income_measure].values.reshape(-1,1))
-            poly_reg_model = LinearRegression()
-            poly_reg_model.fit(poly_features, data["mtr"], data[weight_var])
-            z_poly = poly.fit_transform(self.z.reshape(-1, 1))
-            mtr = poly_reg_model.predict(z_poly)
-            px.line(x=self.z, y=mtr).show()
+            mtr, _ = mtr_function.fit(self.z)
+            # Make MTR constant above $900000 to reflect top rates
+            # TODO: make this so that it's not hard coded
+            idx = np.where(self.z > 900000)[0][0]
+            mtr[idx:] = mtr[idx]
         else:
             print('Please enter a value mtr_smoother method')
             assert False
@@ -204,46 +179,54 @@ class IOT:
                 * f_prime (array_like): slope of the density function for
                     income bin z
         """
-        z_line = np.linspace(1, 100000, 100000)
-
+        z_line = np.linspace(1, 1000000, 100000)
+        # drop zero income observations
+        data = data[data[income_measure] > 0]
         if dist_type == "log_normal":
             mu = (
-                np.log(data[income_measure] + 1) * data[weight_var]
+                np.log(data[income_measure]) * data[weight_var]
             ).sum() / data[weight_var].sum()
             sigmasq = (
                 (
-                    ((np.log(data[income_measure] + 1) - mu) ** 2)
+                    ((np.log(data[income_measure]) - mu) ** 2)
                     * data[weight_var]
                 ).values
                 / data[weight_var].sum()
             ).sum()
             # print("mu = ", mu)
             # print("sigma = ", np.sqrt(sigmasq))
-            f = st.lognorm.pdf(z_line, s=(sigmasq) ** 0.5, scale=np.exp(mu))
-        elif dist_type == "kde_full":
+            # f = st.lognorm.pdf(z_line, s=(sigmasq) ** 0.5, scale=np.exp(mu))
+            # f = f / np.sum(f)
+
+            # analytical derivative of lognormal
+            sigma = np.sqrt(sigmasq)
+            f = (
+                (1 / np.sqrt(2 * np.pi * sigma))
+                * np.exp(-((np.log(z_line) - mu) ** 2) / (2 * sigma**2))
+                * (1 / z_line)
+            )
+            f_prime = (
+                -(
+                    np.exp(-((np.log(z_line) - mu) ** 2) / (2 * sigma**2))
+                    * (np.log(z_line) + sigma**2 - mu)
+                )
+                / (np.sqrt(2) * np.sqrt(np.pi) * sigma ** (5 / 2) * z_line ** 2)
+            )
+        elif dist_type == "kde":
             # uses the original full data for kde estimation
             f_function = st.gaussian_kde(
-                self.data_original[income_measure].values,
-                bw_method=kde_bw,
-                weights=self.data_original[weight_var].values,
-            )
-            f = f_function.pdf(z_line)
-        elif dist_type == "kde_subset":
-            # uses the subsetted data for kde estimation
-            f_function = st.gaussian_kde(
                 data[income_measure],
-                bw_method=kde_bw,
+                # bw_method=kde_bw,
                 weights=data[weight_var],
             )
             f = f_function.pdf(z_line)
+            f = f / np.sum(f)
+            f_prime = np.gradient(
+            f, edge_order=2
+        )
         else:
             print('Please enter a valid value for dist_type')
             assert False
-        # normalize f
-        f = f / np.sum(f)
-        f_prime = np.gradient(
-            f, edge_order=2
-        )  # this works a bit better than finite differences, but still not great
 
         return z_line, f, f_prime
 
@@ -288,6 +271,6 @@ def wm(value, weight):
         scalar: weighted average
     """
     try:
-        return np.average(value, weights=weight)
+        return np.average(value, weights=weight, axis=0)
     except ZeroDivisionError:
-        return np.nan
+        return [np.nan, np.nan]
