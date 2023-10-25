@@ -18,3 +18,4 @@ dependencies:
   - jupyter-book>=0.9.1
   - black
   - plotly-express
+  - kaleido
