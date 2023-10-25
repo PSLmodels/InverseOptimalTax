@@ -1,4 +1,5 @@
 # %%
+
 from iot.iot_user import iot_comparison
 
 # %%
@@ -10,7 +11,6 @@ iot1 = iot_comparison(
     baseline_policies=[None, None],
     labels=["2017 Law", "Biden 2020"],
     years=[2017, 2020],
-    mtr_smoother="spline",
 )
 
 iot2 = iot_comparison(
@@ -21,8 +21,7 @@ iot2 = iot_comparison(
     baseline_policies=[None, None],
     labels=["2017 Law", "Biden 2020"],
     years=[2017, 2020],
-    inc_elast=2,
-    mtr_smoother="poly",
+    inc_elast=0.2,
 )
 
 # %%
@@ -33,6 +32,7 @@ gzplot1 = iot1.plot()
 gzplot2 = iot2.plot()
 fplot = iot1.plot(var="f")
 mtrplot1 = iot1.plot(var="mtr")
+mtrplot2 = iot2.plot(var="mtr")
 thetaplot1 = iot1.plot(var="theta_z")
 
 # %%
@@ -42,4 +42,7 @@ thetaplot1.show()
 gzplot1.show()
 gzplot2.show()
 
+# %%
+mtrplot1.show()
+mtrplot2.show()
 # %%

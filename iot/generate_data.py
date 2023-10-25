@@ -56,33 +56,28 @@ def gen_microdata(
         recs = tc.Records(df)
     if baseline_policy:
         pol1 = tc.Policy()
-        print("Using baseline passed in")
         # implement reforms in loop to layer on changes to move to whatever
         # baseline is desired
         for i, s in enumerate(baseline_policy):
             if isinstance(s, str):
-                print("baseline policy is a string and its being read")
                 baseline = tc.Policy.read_json_reform(s)
             else:
                 baseline = s
-            pol1.implement_reform(baseline, print_warnings=False, raise_errors=False)
+            pol1.implement_reform(
+                baseline, print_warnings=False, raise_errors=False
+            )
     else:
         pol1 = tc.Policy()
 
     # reform should be a string (with path to json file) or a dictionary
     # if a string, the next lines read it in to a dict
     if isinstance(reform, str):
-        print("reform is a string and its being read")
         reform = tc.Policy.read_json_reform(reform)
 
     # Now layer on the reform policy on top of the baseline
     pol1.implement_reform(reform, print_warnings=False, raise_errors=False)
 
-    print("RRC phaseout = ", dict(pol1.items())["RRC_ps"])
-
     calc1 = tc.Calculator(policy=pol1, records=recs)
-    print("Year want to be at is: ", year)
-    print("Current taxcalc year is ", calc1.current_year)
     calc1.advance_to_year(year)
     calc1.calc_all()
 

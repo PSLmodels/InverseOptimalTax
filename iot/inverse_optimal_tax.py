@@ -122,15 +122,17 @@ class IOT:
         """
         bins = 1000  # number of equal-width bins
         data.loc[:, ["z_bin"]] = pd.cut(
-                    data[income_measure], bins, include_lowest=True
-                )
+            data[income_measure], bins, include_lowest=True
+        )
         binned_data = pd.DataFrame(
-                    data[["mtr", income_measure, "z_bin", weight_var]]
-                    .groupby(["z_bin"])
-                    .apply(lambda x: wm(x[["mtr", income_measure]], x[weight_var]))
-                )
+            data[["mtr", income_measure, "z_bin", weight_var]]
+            .groupby(["z_bin"])
+            .apply(lambda x: wm(x[["mtr", income_measure]], x[weight_var]))
+        )
         # make column 0 into two columns
-        binned_data[['mtr', income_measure]] = pd.DataFrame(binned_data[0].tolist(), index= binned_data.index)
+        binned_data[["mtr", income_measure]] = pd.DataFrame(
+            binned_data[0].tolist(), index=binned_data.index
+        )
         binned_data.drop(columns=0, inplace=True)
         binned_data.reset_index(inplace=True)
         if mtr_smoother == "kreg":
@@ -146,7 +148,7 @@ class IOT:
             idx = np.where(self.z > 900000)[0][0]
             mtr[idx:] = mtr[idx]
         else:
-            print('Please enter a value mtr_smoother method')
+            print("Please enter a value mtr_smoother method")
             assert False
         mtr_prime = np.gradient(mtr, edge_order=2)
 
@@ -203,19 +205,21 @@ class IOT:
 
             # analytical derivative of lognormal
             sigma = np.sqrt(sigmasq)
-            F = (1 / 2) * (1 + scipy.special.erf((np.log(z_line) - mu) / (np.sqrt(2) * sigma)))
+            F = (1 / 2) * (
+                1
+                + scipy.special.erf(
+                    (np.log(z_line) - mu) / (np.sqrt(2) * sigma)
+                )
+            )
             f = (
                 (1 / np.sqrt(2 * np.pi * sigma))
                 * np.exp(-((np.log(z_line) - mu) ** 2) / (2 * sigma**2))
                 * (1 / z_line)
             )
-            f_prime = (
-                -(
-                    np.exp(-((np.log(z_line) - mu) ** 2) / (2 * sigma**2))
-                    * (np.log(z_line) + sigma**2 - mu)
-                )
-                / (np.sqrt(2) * np.sqrt(np.pi) * sigma ** (5 / 2) * z_line ** 2)
-            )
+            f_prime = -(
+                np.exp(-((np.log(z_line) - mu) ** 2) / (2 * sigma**2))
+                * (np.log(z_line) + sigma**2 - mu)
+            ) / (np.sqrt(2) * np.sqrt(np.pi) * sigma ** (5 / 2) * z_line**2)
         elif dist_type == "kde":
             # uses the original full data for kde estimation
             f_function = st.gaussian_kde(
@@ -228,7 +232,7 @@ class IOT:
             f = f / np.sum(f)
             f_prime = np.gradient(f, edge_order=2)
         else:
-            print('Please enter a valid value for dist_type')
+            print("Please enter a valid value for dist_type")
             assert False
 
         return z_line, F, f, f_prime
@@ -261,16 +265,24 @@ class IOT:
                 )
             )
         elif method == "LW":  # use Lockwood and Weinzierl formula
-            print('F max and sum is: ", ', self.F.max(), self.F.sum(), self.F[-1])
-            bracket_term = (1 - self.F - (self.mtr / (1-self.mtr)) * self.inc_elast * self.z * self.f)
+            print(
+                'F max and sum is: ", ', self.F.max(), self.F.sum(), self.F[-1]
+            )
+            bracket_term = (
+                1
+                - self.F
+                - (self.mtr / (1 - self.mtr))
+                * self.inc_elast
+                * self.z
+                * self.f
+            )
             d_dz_bracket = np.gradient(bracket_term, edge_order=2)
-            g_z = (
-                - (1 / self.f) * d_dz_bracket)
-            g_z[:10] = g_z[10] # some issue at the bottom of the distribution
+            g_z = -(1 / self.f) * d_dz_bracket
+            g_z[:10] = g_z[10]  # some issue at the bottom of the distribution
             # normalize so sum to one
             g_z = g_z / (g_z * self.f).sum()
         else:
-            print('Please enter a valid value for method')
+            print("Please enter a valid value for method")
             assert False
         return g_z
 
