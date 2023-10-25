@@ -51,7 +51,7 @@ class iot_comparison:
         policies=[],
         labels=[],
         data="CPS",
-        compare_default=True,
+        compare_default=False,
         mtr_wrt="e00200p",
         income_measure="e00200",
         weight_var="s006",
@@ -59,10 +59,9 @@ class iot_comparison:
         bandwidth=1000,
         lower_bound=0,
         upper_bound=500000,
-        # dist_type="kde_full",
         dist_type="log_normal",
         kde_bw=None,
-        mtr_smoother="spline",
+        mtr_smoother="kreg",
         mtr_smooth_param=4,
     ):
         self.income_measure = income_measure
