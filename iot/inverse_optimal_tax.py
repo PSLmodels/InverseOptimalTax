@@ -2,12 +2,7 @@ import numpy as np
 import pandas as pd
 import scipy.stats as st
 import scipy
-from scipy.interpolate import UnivariateSpline
 from statsmodels.nonparametric.kernel_regression import KernelReg
-from sklearn.kernel_ridge import KernelRidge
-from sklearn.linear_model import LinearRegression
-from sklearn.preprocessing import PolynomialFeatures
-import plotly.express as px
 
 
 class IOT:
@@ -59,13 +54,6 @@ class IOT:
         #     (data[income_measure] >= lower_bound)
         #     & (data[income_measure] <= upper_bound)
         # ]
-        # create bins for analysis
-        # bins = np.arange(
-        #     start=lower_bound, stop=upper_bound + bandwidth, step=bandwidth
-        # )
-        # data.loc[:, ["z_bin"]] = pd.cut(
-        #     data[income_measure], bins, include_lowest=True
-        # )
         self.inc_elast = inc_elast
         self.z, self.F, self.f, self.f_prime = self.compute_income_dist(
             data, income_measure, weight_var, dist_type, kde_bw
@@ -74,7 +62,7 @@ class IOT:
             data, weight_var, income_measure, mtr_smoother, mtr_smooth_param
         )
         self.theta_z = 1 + ((self.z * self.f_prime) / self.f)
-        self.g_z = self.sw_weights()
+        self.g_z, self.g_z_numerical = self.sw_weights()
 
     def df(self):
         """
@@ -95,6 +83,7 @@ class IOT:
             "mtr_prime": self.mtr_prime,
             "theta_z": self.theta_z,
             "g_z": self.g_z,
+            "g_z_numerical": self.g_z_numerical,
         }
         df = pd.DataFrame.from_dict(dict_out)
         return df
@@ -143,10 +132,6 @@ class IOT:
                 reg_type="ll",
             )
             mtr, _ = mtr_function.fit(self.z)
-            # Make MTR constant above $900000 to reflect top rates
-            # TODO: make this so that it's not hard coded
-            idx = np.where(self.z > 900000)[0][0]
-            mtr[idx:] = mtr[idx]
         else:
             print("Please enter a value mtr_smoother method")
             assert False
@@ -196,8 +181,6 @@ class IOT:
                 ).values
                 / data[weight_var].sum()
             ).sum()
-            # print("mu = ", mu)
-            # print("sigma = ", np.sqrt(sigmasq))
             # F = st.lognorm.cdf(z_line, s=(sigmasq) ** 0.5, scale=np.exp(mu))
             # f = st.lognorm.pdf(z_line, s=(sigmasq) ** 0.5, scale=np.exp(mu))
             # f = f / np.sum(f)
@@ -212,14 +195,18 @@ class IOT:
                 )
             )
             f = (
-                (1 / np.sqrt(2 * np.pi * sigma))
+                (1 / (sigma * np.sqrt(2 * np.pi)))
                 * np.exp(-((np.log(z_line) - mu) ** 2) / (2 * sigma**2))
                 * (1 / z_line)
             )
-            f_prime = -(
-                np.exp(-((np.log(z_line) - mu) ** 2) / (2 * sigma**2))
-                * (np.log(z_line) + sigma**2 - mu)
-            ) / (np.sqrt(2) * np.sqrt(np.pi) * sigma ** (5 / 2) * z_line**2)
+            f_prime = (
+                -1
+                * np.exp(-((np.log(z_line) - mu) ** 2) / (2 * sigma**2))
+                * (
+                    (np.log(z_line) + sigma**2 - mu)
+                    / (z_line**2 * sigma**3 * np.sqrt(2 * np.pi))
+                )
+            )
         elif dist_type == "kde":
             # uses the original full data for kde estimation
             f_function = st.gaussian_kde(
@@ -254,37 +241,26 @@ class IOT:
             array_like: vector of social welfare weights across
             the income distribution
         """
-        method = "LW"
-        if method == "JJZ":
-            g_z = (
-                1
-                + ((self.theta_z * self.inc_elast * self.mtr) / (1 - self.mtr))
-                + (
-                    (self.inc_elast * self.z * self.mtr_prime)
-                    / (1 - self.mtr) ** 2
-                )
+        g_z = (
+            1
+            + ((self.theta_z * self.inc_elast * self.mtr) / (1 - self.mtr))
+            + (
+                (self.inc_elast * self.z * self.mtr_prime)
+                / (1 - self.mtr) ** 2
             )
-        elif method == "LW":  # use Lockwood and Weinzierl formula
-            print(
-                'F max and sum is: ", ', self.F.max(), self.F.sum(), self.F[-1]
-            )
-            bracket_term = (
-                1
-                - self.F
-                - (self.mtr / (1 - self.mtr))
-                * self.inc_elast
-                * self.z
-                * self.f
-            )
-            d_dz_bracket = np.gradient(bracket_term, edge_order=2)
-            g_z = -(1 / self.f) * d_dz_bracket
-            g_z[:10] = g_z[10]  # some issue at the bottom of the distribution
-            # normalize so sum to one
-            g_z = g_z / (g_z * self.f).sum()
-        else:
-            print("Please enter a valid value for method")
-            assert False
-        return g_z
+        )
+        # use Lockwood and Weinzierl formula, which should be equivalent but using numerical differentiation
+        print('F max and sum is: ", ', self.F.max(), self.F.sum(), self.F[-1])
+        bracket_term = (
+            1
+            - self.F
+            - (self.mtr / (1 - self.mtr)) * self.inc_elast * self.z * self.f
+        )
+        # d_dz_bracket = np.gradient(bracket_term, edge_order=2)
+        d_dz_bracket = np.diff(bracket_term) / np.diff(self.z)
+        d_dz_bracket = np.append(d_dz_bracket, d_dz_bracket[-1])
+        g_z_numerical = -(1 / self.f) * d_dz_bracket
+        return g_z, g_z_numerical
 
 
 def wm(value, weight):

@@ -144,10 +144,14 @@ class iot_comparison:
                 + "=%{y:.3f}<extra></extra>"
             )
         else:
+            if var == "g_z_numerical":
+                start_idx = 10  # numerical approximation not great near 0
+            else:
+                start_idx = 0
             y = []
             for i in self.iot:
-                y.append(i.df()[var])
-            fig = px.line(x=self.iot[0].df().z, y=y)
+                y.append(i.df()[var][start_idx:])
+            fig = px.line(x=self.iot[0].df().z[start_idx:], y=y)
             for j in enumerate(self.labels):
                 fig.data[j[0]].name = j[1]
                 fig.data[j[0]].hovertemplate = (
