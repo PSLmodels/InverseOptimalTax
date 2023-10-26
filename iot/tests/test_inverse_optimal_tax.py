@@ -19,18 +19,13 @@ def test_IOT_df():
     calc = taxcalc.calculator.Calculator(policy=pol, records=rec)
     calc.advance_to_year(2022)
     calc.calc_all()
-    data = calc.dataframe(["s006", "expanded_income", "XTOT", "combined"])
+    data = calc.dataframe(["s006", "e00200", "XTOT", "combined"])
     (_, _, mtr1) = calc.mtr(
         "e00200p", calc_all_already_called=True, wrt_full_compensation=False
     )
     data["mtr"] = mtr1
     # create instance of IOT object
-    iot1 = IOT(
-        data,
-        dist_type="log_normal",
-        mtr_smoother="cubic_spline",
-        mtr_smooth_param=3,
-    )
+    iot1 = IOT(data)
     # return df from IOT object
     df_out = iot1.df()
 
@@ -180,9 +175,17 @@ def test_IOT_df():
 #     assert np.allclose(g_z, expected_g_z)
 
 
-# TODO: get this test working.  In princple it should
-# Probably want to get the MTR and income distribution tests above
-# dialed in first
+# TODO: get this test working.  In principle it should
+# And it does if you hard code mu and sigma for the lognormal distribution
+# in inverse_optimal_tax.py
+# otherwise, for any sample size N that is not large enough to crash the computer.
+# the approximation of mu and sigma is not close enough so that the
+# analytical and numerical solutions are close enough to pass the test
+# If can find way around this, what is done below can be used for the
+# test of approximations of distributions and mtr functions above
+# Also, the below assumes constnat MTRS (so T''(z) = 0), but one could
+# extend this to a MTR schedule that is not constant, but has known
+# parametric forms for T' and T''
 # def test_sw_weights_analytical():
 #     """
 #     A test of the sw_weights function using a special case where their
@@ -199,10 +202,11 @@ def test_IOT_df():
 #     sigma = 1
 #     mtr = 0.15
 #     elasticity = 0.4
+#     N = 1000000000  # Sample size, need larger to be closer to theoretical values bc won't precisely approximate sigma and mu
 #     sim_dist_type = "log_normal"
 #     if sim_dist_type == "exponential":
 #         # generate income according to exponential distribution
-#         z = np.random.exponential(beta, 100000)
+#         z_data = np.random.exponential(beta, N)
 
 #         def f_z_exp(z, beta):
 #             return (1 / beta) * np.exp(-z / beta)
@@ -215,16 +219,18 @@ def test_IOT_df():
 
 #         def g_z_exp(z, beta, elasticity, mtr):
 #             theta = theta_z_exp(z, beta)
-#             g_z_exp = 1 + theta * elasticity * (mtr / (1 - mtr))
+#             g_z_exp = 1 + theta * elasticity * (
+#                 mtr / (1 - mtr)
+#             )  # + elasticity * z * (mtr_prime / (1 - mtr) ** 2)
 #             return g_z_exp
 
 #     else:
 #         # generate income according to lognormal distribution
-#         z = np.random.lognormal(mu, sigma, 100000)
+#         z_data = np.random.lognormal(mu, sigma, N)
 
 #         def f_z_exp(z, mu, sigma):
 #             f = (
-#                 (1 / np.sqrt(2 * np.pi * sigma))
+#                 (1 / (sigma * np.sqrt(2 * np.pi)))
 #                 * np.exp(-((np.log(z) - mu) ** 2) / (2 * sigma**2))
 #                 * (1 / z)
 #             )
@@ -232,39 +238,42 @@ def test_IOT_df():
 
 #         def f_prime_z_exp(z, mu, sigma):
 #             fp = (
-#                 # -((np.log(z) - mu) / (np.sqrt(2 * np.pi * sigma) * (sigma ** 2) * (z ** 2)))
-#                 # * np.exp(-((np.log(z) - mu) ** 2) / (2 * sigma ** 2))
-#                 -(
-#                     np.exp(-((np.log(z) - mu) ** 2) / (2 * sigma**2))
-#                     * (np.log(z) + sigma**2 - mu)
+#                 -1
+#                 * np.exp(-((np.log(z) - mu) ** 2) / (2 * sigma**2))
+#                 * (
+#                     (np.log(z) + sigma**2 - mu)
+#                     / (z**2 * sigma**3 * np.sqrt(2 * np.pi))
 #                 )
-#                 / (np.sqrt(2) * np.sqrt(np.pi) * sigma ** (5 / 2) * z**2)
 #             )
 #             return fp
 
 #         def theta_z_exp(z, mu, sigma):
-#             return 1 - ((np.log(z) + sigma**2 - mu) / sigma**2)
+#             theta = 1 - ((np.log(z) + sigma**2 - mu) / sigma**2)
+#             # theta = 1 + (z * f_prime_z_exp(z, mu, sigma) / f_z_exp(z, mu, sigma))
+#             return theta
 
 #         def g_z_exp(z, mu, sigma, elasticity, mtr):
 #             theta = theta_z_exp(z, mu, sigma)
-#             g_z_exp = 1 + theta * elasticity * (mtr / (1 - mtr))
+#             g_z_exp = 1 + (
+#                 theta * elasticity * (mtr / (1 - mtr))
+#             )  # + elasticity * z * (mtr_prime / (1 - mtr) ** 2)
 #             return g_z_exp
 
 #     # Find test value for g_z
 #     # sort z -- not sure it matters
-#     z.sort()
+#     z_data.sort()
 #     dict_in = {
-#         "e00200p": z,
-#         "e00200s": np.zeros_like(z),
-#         "e00200": z,
-#         "s006": np.ones_like(z),
-#         "XTOT": np.ones_like(z),
-#         "MARS": np.ones_like(z),
-#         "mtr": np.ones_like(z) * mtr,
+#         "e00200p": z_data,
+#         "e00200s": np.zeros_like(z_data),
+#         "e00200": z_data,
+#         "s006": np.ones_like(z_data),
+#         "XTOT": np.ones_like(z_data),
+#         "MARS": np.ones_like(z_data),
+#         "mtr": np.ones_like(z_data) * mtr,
 #     }
 #     df = pd.DataFrame(dict_in)
 #     # create instance of IOT object
-#     mtr_smoother = "spline"
+#     mtr_smoother = "kreg"
 #     weight_var = "s006"
 #     if sim_dist_type == "log_normal":
 #         dist_type = "log_normal"
@@ -273,31 +282,58 @@ def test_IOT_df():
 #     iot_test = IOT(
 #         df,
 #         income_measure="e00200",
-#         bandwidth=100,
+#         weight_var=weight_var,
 #         dist_type=dist_type,
 #         mtr_smoother=mtr_smoother,
-#         mtr_smooth_param=3,
-#         upper_bound=80000,
+#         inc_elast=elasticity,
 #     )
 #     if sim_dist_type == "exponential":
-#         g_z_test = iot_test.sw_weights()
+#         g_z_test = iot_test.g_z
 #         g_z_expected = g_z_exp(iot_test.z, beta, elasticity, mtr)
 #         theta_z_expected = theta_z_exp(iot_test.z, beta)
 #         f_z_expected = f_z_exp(iot_test.z, beta)
-#         f_z_expected = f_z_expected / np.sum(f_z_expected)
+#         # f_z_expected = f_z_expected / np.sum(f_z_expected)
 #         f_prime_z_expected = f_prime_z_exp(iot_test.z, beta)
 #     else:
-#         g_z_test = iot_test.sw_weights()
+#         g_z_test = iot_test.g_z
 #         g_z_expected = g_z_exp(iot_test.z, mu, sigma, elasticity, mtr)
 #         theta_z_expected = theta_z_exp(iot_test.z, mu, sigma)
 #         f_z_expected = f_z_exp(iot_test.z, mu, sigma)
-#         f_z_expected = f_z_expected / np.sum(f_z_expected)
+#         # f_z_expected = f_z_expected / np.sum(f_z_expected)
 #         f_prime_z_expected = f_prime_z_exp(iot_test.z, mu, sigma)
 
+#     print("Max diff for f(z) = ", np.absolute(f_z_expected - iot_test.f).max())
+#     print(
+#         "Max diff for f'(z) = ",
+#         np.absolute(f_prime_z_expected - iot_test.f_prime).max(),
+#     )
+#     print(
+#         "Max diff for theta(z) = ",
+#         np.absolute(theta_z_expected - iot_test.theta_z).max(),
+#     )
+#     print(
+#         "Max diff for g(z) = ", np.absolute(g_z_expected - iot_test.g_z).max()
+#     )
+#     print(
+#         "Max diff for g(z) numerical = ",
+#         np.absolute(g_z_expected[100:] - iot_test.g_z_numerical[100:]).max(),
+#     )
+#     print(
+#         "Max and min of mtr_prime = ",
+#         iot_test.mtr_prime.max(),
+#         iot_test.mtr_prime.min(),
+#     )
+#     print("Max and min of mtr = ", iot_test.mtr.max(), iot_test.mtr.min())
+#     print("First g_z analytical = ", g_z_expected[100:110])
+#     print("First g_z model = ", iot_test.g_z[100:110])
+#     print("First g_z model, numerical = ", iot_test.g_z_numerical[100:110])
 #     assert np.allclose(iot_test.f, f_z_expected, atol=1e-6)
 #     assert np.allclose(iot_test.f_prime, f_prime_z_expected, atol=1e-7)
 #     # fprimes are close, but off by an order of magnitude bc very small
 #     # numbers (1-12/13 at hight end of z... this then leads to significant
 #     # diffs in theta_z)
-#     # assert np.allclose(iot_test.theta_z[100:], theta_z_expected[100:], atol=1e-4)
-#     # assert np.allclose(g_z_test, g_z_expected, atol=1e-4)
+#     assert np.allclose(iot_test.theta_z, theta_z_expected, atol=1e-4)
+#     assert np.allclose(g_z_test, g_z_expected, atol=1e-4)
+#     assert np.allclose(
+#         iot_test.g_z_numerical[100:], g_z_expected[100:], atol=1e-4
+#     )
