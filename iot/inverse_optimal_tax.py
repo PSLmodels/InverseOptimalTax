@@ -250,7 +250,6 @@ class IOT:
             )
         )
         # use Lockwood and Weinzierl formula, which should be equivalent but using numerical differentiation
-        print('F max and sum is: ", ', self.F.max(), self.F.sum(), self.F[-1])
         bracket_term = (
             1
             - self.F
