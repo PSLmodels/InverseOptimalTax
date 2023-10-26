@@ -18,6 +18,8 @@ class iot_comparison:
     Args:
         year (int): year for analysis, see
             taxcalc.Calculator.advance_to_year
+        baseline_policies (Tax-Calculator Policy object): baseline
+            policy upon which reform policies are layered
         policies (list): list of dicts or json files denoting policy
             parameter changes
         labels (list): list of string labels for each policy
@@ -45,20 +47,21 @@ class iot_comparison:
     def __init__(
         self,
         years=[CURRENT_YEAR],
+        baseline_policies=[None],
         policies=[],
         labels=[],
         data="CPS",
-        compare_default=True,
+        compare_default=False,
         mtr_wrt="e00200p",
-        income_measure="expanded_income",
+        income_measure="e00200",
         weight_var="s006",
         inc_elast=0.25,
         bandwidth=1000,
         lower_bound=0,
         upper_bound=500000,
-        dist_type="kde_full",
+        dist_type="log_normal",
         kde_bw=None,
-        mtr_smoother="spline",
+        mtr_smoother="kreg",
         mtr_smooth_param=4,
     ):
         self.income_measure = income_measure
@@ -67,14 +70,14 @@ class iot_comparison:
         df = []
         self.iot = []
         # inititalize list of dataframes and
-        # IOT class objects for each polciy
+        # IOT class objects for each policy
         self.labels = labels
-
         for i, v in enumerate(policies):
             df.append(
                 gen_microdata(
                     year=years[i],
                     data=data,
+                    baseline_policy=baseline_policies[i],
                     reform=v,
                     mtr_wrt=mtr_wrt,
                     income_measure=income_measure,
@@ -141,10 +144,14 @@ class iot_comparison:
                 + "=%{y:.3f}<extra></extra>"
             )
         else:
+            if var == "g_z_numerical":
+                start_idx = 10  # numerical approximation not great near 0
+            else:
+                start_idx = 0
             y = []
             for i in self.iot:
-                y.append(i.df()[var])
-            fig = px.line(x=self.iot[0].df().z, y=y)
+                y.append(i.df()[var][start_idx:])
+            fig = px.line(x=self.iot[0].df().z[start_idx:], y=y)
             for j in enumerate(self.labels):
                 fig.data[j[0]].name = j[1]
                 fig.data[j[0]].hovertemplate = (

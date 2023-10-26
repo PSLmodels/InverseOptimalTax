@@ -1,13 +1,13 @@
 import numpy as np
 import pandas as pd
 import scipy.stats as st
-from scipy.interpolate import UnivariateSpline
+import scipy
 from statsmodels.nonparametric.kernel_regression import KernelReg
 
 
 class IOT:
     """
-    Constructor for thse IOT class.
+    Constructor for the IOT class.
 
     This IOT class can be used to compute the social welfare weights
     across the income distribution given data, tax policy parameters,
@@ -36,43 +36,37 @@ class IOT:
     def __init__(
         self,
         data,
-        income_measure="expanded_income",
+        income_measure="e00200",
         weight_var="s006",
         inc_elast=0.25,
         bandwidth=1000,
         lower_bound=0,
         upper_bound=500000,
-        dist_type="kde_full",
+        dist_type="log_normal",
         kde_bw=None,
-        mtr_smoother="spline",
-        mtr_smooth_param=4,
+        mtr_smoother="kreg",
+        mtr_smooth_param=3,
     ):
-
         # keep the original data intact
         self.data_original = data.copy()
         # clean data based on upper and lower bounds
-        data = data[
-            (data[income_measure] >= lower_bound)
-            & (data[income_measure] <= upper_bound)
-        ]
-        # create bins for analysis
-        bins = np.arange(
-            start=lower_bound, stop=upper_bound + bandwidth, step=bandwidth
-        )
-        data["z_bin"] = pd.cut(data[income_measure], bins, include_lowest=True)
+        # data = data[
+        #     (data[income_measure] >= lower_bound)
+        #     & (data[income_measure] <= upper_bound)
+        # ]
         self.inc_elast = inc_elast
-        self.z, self.f, self.f_prime = self.compute_income_dist(
+        self.z, self.F, self.f, self.f_prime = self.compute_income_dist(
             data, income_measure, weight_var, dist_type, kde_bw
         )
         self.mtr, self.mtr_prime = self.compute_mtr_dist(
-            data, weight_var, mtr_smoother, mtr_smooth_param
+            data, weight_var, income_measure, mtr_smoother, mtr_smooth_param
         )
         self.theta_z = 1 + ((self.z * self.f_prime) / self.f)
-        self.g_z = self.sw_weights()
+        self.g_z, self.g_z_numerical = self.sw_weights()
 
     def df(self):
         """
-        Return all vector attributs in a dataframe format
+        Return all vector attributes in a DataFrame format
 
         Args:
             None
@@ -89,12 +83,13 @@ class IOT:
             "mtr_prime": self.mtr_prime,
             "theta_z": self.theta_z,
             "g_z": self.g_z,
+            "g_z_numerical": self.g_z_numerical,
         }
         df = pd.DataFrame.from_dict(dict_out)
         return df
 
     def compute_mtr_dist(
-        self, data, weight_var, mtr_smoother, mtr_smooth_param
+        self, data, weight_var, income_measure, mtr_smoother, mtr_smooth_param
     ):
         """
         Compute marginal tax rates over the income distribution and
@@ -114,31 +109,33 @@ class IOT:
                 * mtr_prime (array_like): rate of change in marginal tax rates
                     for each income bin
         """
-        data_group = (
-            data[["mtr", "z_bin", weight_var]]
-            .groupby(["z_bin"])
-            .apply(lambda x: np.average(x["mtr"], weights=x[weight_var]))
+        bins = 1000  # number of equal-width bins
+        data.loc[:, ["z_bin"]] = pd.cut(
+            data[income_measure], bins, include_lowest=True
         )
-        if mtr_smoother == "spline":
-            spl = UnivariateSpline(
-                self.z, data_group.values, k=mtr_smooth_param
-            )
-            mtr = spl(self.z)
-        elif mtr_smoother == "kr":
+        binned_data = pd.DataFrame(
+            data[["mtr", income_measure, "z_bin", weight_var]]
+            .groupby(["z_bin"])
+            .apply(lambda x: wm(x[["mtr", income_measure]], x[weight_var]))
+        )
+        # make column 0 into two columns
+        binned_data[["mtr", income_measure]] = pd.DataFrame(
+            binned_data[0].tolist(), index=binned_data.index
+        )
+        binned_data.drop(columns=0, inplace=True)
+        binned_data.reset_index(inplace=True)
+        if mtr_smoother == "kreg":
             mtr_function = KernelReg(
-                data_group.values,
-                self.z,
+                binned_data["mtr"].dropna(),
+                binned_data[income_measure].dropna(),
                 var_type="c",
                 reg_type="ll",
-                bw=[mtr_smooth_param],
-                ckertype="gaussian",
-                defaults=None,
             )
             mtr, _ = mtr_function.fit(self.z)
         else:
-            mtr = data_group.values
-        mtr_prime = np.diff(mtr) / np.diff(self.z)
-        mtr_prime = np.append(mtr_prime, mtr_prime[-1])
+            print("Please enter a value mtr_smoother method")
+            assert False
+        mtr_prime = np.gradient(mtr, edge_order=2)
 
         return mtr, mtr_prime
 
@@ -170,52 +167,62 @@ class IOT:
                 * f_prime (array_like): slope of the density function for
                     income bin z
         """
-        data_group = (
-            data[[income_measure, "z_bin", weight_var]]
-            .groupby(["z_bin"])
-            .apply(
-                lambda x: np.average(x[income_measure], weights=x[weight_var])
-            )
-        )
-        z = data_group.values
-
+        z_line = np.linspace(1, 1000000, 100000)
+        # drop zero income observations
+        data = data[data[income_measure] > 0]
         if dist_type == "log_normal":
             mu = (
                 np.log(data[income_measure]) * data[weight_var]
             ).sum() / data[weight_var].sum()
             sigmasq = (
-                (((np.log(data[income_measure]) - mu) ** 2) * data[weight_var])
+                (
+                    ((np.log(data[income_measure]) - mu) ** 2)
+                    * data[weight_var]
+                ).values
                 / data[weight_var].sum()
             ).sum()
-            f = st.lognorm.pdf(z, s=(sigmasq) ** 0.5, scale=np.exp(mu))
-        elif dist_type == "kde_full":
+            # F = st.lognorm.cdf(z_line, s=(sigmasq) ** 0.5, scale=np.exp(mu))
+            # f = st.lognorm.pdf(z_line, s=(sigmasq) ** 0.5, scale=np.exp(mu))
+            # f = f / np.sum(f)
+            # f_prime = np.gradient(f, edge_order=2)
+
+            # analytical derivative of lognormal
+            sigma = np.sqrt(sigmasq)
+            F = (1 / 2) * (
+                1
+                + scipy.special.erf(
+                    (np.log(z_line) - mu) / (np.sqrt(2) * sigma)
+                )
+            )
+            f = (
+                (1 / (sigma * np.sqrt(2 * np.pi)))
+                * np.exp(-((np.log(z_line) - mu) ** 2) / (2 * sigma**2))
+                * (1 / z_line)
+            )
+            f_prime = (
+                -1
+                * np.exp(-((np.log(z_line) - mu) ** 2) / (2 * sigma**2))
+                * (
+                    (np.log(z_line) + sigma**2 - mu)
+                    / (z_line**2 * sigma**3 * np.sqrt(2 * np.pi))
+                )
+            )
+        elif dist_type == "kde":
             # uses the original full data for kde estimation
             f_function = st.gaussian_kde(
-                self.data_original[income_measure],
-                bw_method=kde_bw,
-                weights=self.data_original[weight_var],
-            )
-            f = f_function(z)
-        elif dist_type == "kde_subset":
-            # uses the subsetted data for kde estimation
-            f_function = st.gaussian_kde(
                 data[income_measure],
-                bw_method=kde_bw,
+                # bw_method=kde_bw,
                 weights=data[weight_var],
             )
-            f = f_function(z)
+            F = f_function.cdf(z_line)
+            f = f_function.pdf(z_line)
+            f = f / np.sum(f)
+            f_prime = np.gradient(f, edge_order=2)
         else:
-            f = (
-                data[[weight_var, "z_bin"]].groupby("z_bin").sum()
-                / data[weight_var].sum()
-            )[weight_var].values
-        # normalize f
-        f = f / np.sum(f)
-        f_prime = np.diff(f) / np.diff(z)
-        # assume diff between last bin and next is the same as before
-        f_prime = np.append(f_prime, f_prime[-1])
+            print("Please enter a valid value for dist_type")
+            assert False
 
-        return z, f, f_prime
+        return z_line, F, f, f_prime
 
     def sw_weights(self):
         r"""
@@ -242,5 +249,31 @@ class IOT:
                 / (1 - self.mtr) ** 2
             )
         )
+        # use Lockwood and Weinzierl formula, which should be equivalent but using numerical differentiation
+        bracket_term = (
+            1
+            - self.F
+            - (self.mtr / (1 - self.mtr)) * self.inc_elast * self.z * self.f
+        )
+        # d_dz_bracket = np.gradient(bracket_term, edge_order=2)
+        d_dz_bracket = np.diff(bracket_term) / np.diff(self.z)
+        d_dz_bracket = np.append(d_dz_bracket, d_dz_bracket[-1])
+        g_z_numerical = -(1 / self.f) * d_dz_bracket
+        return g_z, g_z_numerical
 
-        return g_z
+
+def wm(value, weight):
+    """
+    Weighted mean function that allows for zero division
+
+    Args:
+        value (array_like): values to be averaged
+        weight (array_like): weights for each value
+
+    Returns:
+        scalar: weighted average
+    """
+    try:
+        return np.average(value, weights=weight, axis=0)
+    except ZeroDivisionError:
+        return [np.nan, np.nan]

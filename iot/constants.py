@@ -6,6 +6,7 @@ OUTPUT_LABELS = {
     "expanded_income": "Expanded Income",
     "z": r"$z$",
     "g_z": r"$g_z$",
+    "g_z_numerical": r"$g_z$",
     "f": r"$f(z)$",
     "f_prime": r"$f'(z)$",
     "theta_z": r"$\theta_z$",
