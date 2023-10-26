@@ -157,7 +157,7 @@ def test_IOT_df():
 # )
 # iot2 = copy.deepcopy(iot1)
 # iot2.theta_z = np.array([1.7, 2.4, 99.0, 1.5, 1.5, 1.5])
-# iot2.inc_elast = np.array([0.3, 0.1, 0.0, 0.4, 0.4, 0.4])
+# iot2.eti = np.array([0.3, 0.1, 0.0, 0.4, 0.4, 0.4])
 # iot2.mtr = np.array([0.25, 0.2, 0.25, 0.25, 0.25, 0.0])
 # iot2.z = np.array([5000.0, 5000.0, 5000.0, 5000.0, 300.0, 300.0])
 # iot2.mtr_prime = np.array([0.03, 0.03, 0.03, 0.0, 0.0, 0.0])
@@ -285,7 +285,7 @@ def test_IOT_df():
 #         weight_var=weight_var,
 #         dist_type=dist_type,
 #         mtr_smoother=mtr_smoother,
-#         inc_elast=elasticity,
+#         eti=elasticity,
 #     )
 #     if sim_dist_type == "exponential":
 #         g_z_test = iot_test.g_z

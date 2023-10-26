@@ -19,7 +19,7 @@ class IOT:
             weight_var, mtr
         income_measure (str): name of income measure from data to use
         weight_var (str): name of weight measure from data to use
-        inc_elast (scalar): compensated elasticity of taxable income
+        eti (scalar): compensated elasticity of taxable income
             w.r.t. the marginal tax rate
         bandwidth (scalar): size of income bins in units of income
         lower_bound (scalar): minimum income to consider
@@ -38,7 +38,7 @@ class IOT:
         data,
         income_measure="e00200",
         weight_var="s006",
-        inc_elast=0.25,
+        eti=0.25,
         bandwidth=1000,
         lower_bound=0,
         upper_bound=500000,
@@ -54,7 +54,7 @@ class IOT:
         #     (data[income_measure] >= lower_bound)
         #     & (data[income_measure] <= upper_bound)
         # ]
-        self.inc_elast = inc_elast
+        self.eti = eti
         self.z, self.F, self.f, self.f_prime = self.compute_income_dist(
             data, income_measure, weight_var, dist_type, kde_bw
         )
@@ -243,9 +243,9 @@ class IOT:
         """
         g_z = (
             1
-            + ((self.theta_z * self.inc_elast * self.mtr) / (1 - self.mtr))
+            + ((self.theta_z * self.eti * self.mtr) / (1 - self.mtr))
             + (
-                (self.inc_elast * self.z * self.mtr_prime)
+                (self.eti * self.z * self.mtr_prime)
                 / (1 - self.mtr) ** 2
             )
         )
@@ -253,7 +253,7 @@ class IOT:
         bracket_term = (
             1
             - self.F
-            - (self.mtr / (1 - self.mtr)) * self.inc_elast * self.z * self.f
+            - (self.mtr / (1 - self.mtr)) * self.eti * self.z * self.f
         )
         # d_dz_bracket = np.gradient(bracket_term, edge_order=2)
         d_dz_bracket = np.diff(bracket_term) / np.diff(self.z)

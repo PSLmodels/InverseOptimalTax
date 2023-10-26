@@ -30,7 +30,7 @@ class iot_comparison:
         mtr_wtr (str): name of income source to compute MTR on
         income_measure (str): name of income measure from data to use
         weight_var (str): name of weight measure from data to use
-        inc_elast (scalar): compensated elasticity of taxable income
+        eti (scalar): compensated elasticity of taxable income
             w.r.t. the marginal tax rate
         bandwidth (scalar): size of income bins in units of income
         lower_bound (scalar): minimum income to consider
@@ -55,7 +55,7 @@ class iot_comparison:
         mtr_wrt="e00200p",
         income_measure="e00200",
         weight_var="s006",
-        inc_elast=0.25,
+        eti=0.25,
         bandwidth=1000,
         lower_bound=0,
         upper_bound=500000,
@@ -103,7 +103,7 @@ class iot_comparison:
                     j,
                     income_measure=income_measure,
                     weight_var=weight_var,
-                    inc_elast=inc_elast,
+                    eti=eti,
                     bandwidth=bandwidth,
                     lower_bound=lower_bound,
                     upper_bound=upper_bound,
@@ -208,15 +208,15 @@ class iot_comparison:
         # g1 with mtr_prime = 0
         g1 = (
             0
-            + ((df.theta_z * self.iot[k].inc_elast * df.mtr) / (1 - df.mtr))
-            + ((self.iot[k].inc_elast * df.z * 0) / (1 - df.mtr) ** 2)
+            + ((df.theta_z * self.iot[k].eti * df.mtr) / (1 - df.mtr))
+            + ((self.iot[k].eti * df.z * 0) / (1 - df.mtr) ** 2)
         )
         # g2 with theta_z = 0
         g2 = (
             0
-            + ((0 * self.iot[k].inc_elast * df.mtr) / (1 - df.mtr))
+            + ((0 * self.iot[k].eti * df.mtr) / (1 - df.mtr))
             + (
-                (self.iot[k].inc_elast * df.z * df.mtr_prime)
+                (self.iot[k].eti * df.z * df.mtr_prime)
                 / (1 - df.mtr) ** 2
             )
         )
