@@ -3,7 +3,7 @@ import pandas as pd
 import scipy.stats as st
 import scipy
 from statsmodels.nonparametric.kernel_regression import KernelReg
-
+from scipy.interpolate import UnivariateSpline
 
 class IOT:
     """
@@ -54,14 +54,29 @@ class IOT:
         #     (data[income_measure] >= lower_bound)
         #     & (data[income_measure] <= upper_bound)
         # ]
-        self.eti = eti
+        # Get income distribution
         self.z, self.F, self.f, self.f_prime = self.compute_income_dist(
             data, income_measure, weight_var, dist_type, kde_bw
         )
+        # see if eti is a scalar
+        if isinstance(eti, float):
+            self.eti = eti
+        else:  # if not, then it should be a dict with keys containing lists as values
+            # check that same number of ETI values as knot points
+            assert len(eti["knot_points"]) == len(eti["eti_values"])
+            # want to interpolate across income distribution with knot points
+            # assume that eti can't go beyond 1 (or the max of the eti_values provided)
+            eti_spl = UnivariateSpline(
+                eti["knot_points"], eti["eti_values"], k=1, s=0
+                )
+            self.eti = eti_spl(self.z)
+        # compute marginal tax rate schedule
         self.mtr, self.mtr_prime = self.compute_mtr_dist(
             data, weight_var, income_measure, mtr_smoother, mtr_smooth_param
         )
+        # compute theta_z, the elasticity of the tax base
         self.theta_z = 1 + ((self.z * self.f_prime) / self.f)
+        # compute the social welfare weights
         self.g_z, self.g_z_numerical = self.sw_weights()
 
     def df(self):
