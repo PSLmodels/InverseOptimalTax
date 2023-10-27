@@ -244,7 +244,8 @@ class IOT:
         r"""
         Returns the social welfare weights for a given tax policy.
 
-        See Jacobs, Jongen, and Zoutman (2017)
+        See Jacobs, Jongen, and Zoutman (2017) and
+        Lockwood and Weinzierl (2016) for details.
 
         .. math::
             g_{z} = 1 + \theta_z \varepsilon^{c}\frac{T'(z)}{(1-T'(z))} +
@@ -273,6 +274,45 @@ class IOT:
         d_dz_bracket = np.append(d_dz_bracket, d_dz_bracket[-1])
         g_z_numerical = -(1 / self.f) * d_dz_bracket
         return g_z, g_z_numerical
+
+
+def find_eti(iot1, iot2, g_z_type="g_z_numerical"):
+    """
+    This function solves for the ETI that would result in the
+    policy represented via MTRs in iot2 be consistent with the
+    social welfare function inferred from the policies of iot1.
+
+    .. math::
+            \varepilon_{z} = \frac{(1-T'(z))}{T'(z)}\frac{(1-F(z))}{zf(z)}\int_{z}^{\infty}\frac{1-g_{\tilde{z}}{1-F(y)}dF(\tilde{z})
+
+    Args:
+        iot1 (IOT): IOT class instance representing baseline policy
+        iot2 (IOT): IOT class instance representing reform policy
+        g_z_type (str): type of social welfare function to use
+            Options are:
+            * 'g_z' for the analytical formula
+            * 'g_z_numerical' for the numerical approximation
+
+    Returns:
+        eti_beliefs (array-like): vector of ETI beliefs over z
+    """
+    if g_z_type == "g_z":
+        g_z = iot1.g_z
+    else:
+        g_z = iot1.g_z_numerical
+    # The equation below is a simplication of the above to make the integration easier
+    eti_beliefs_lw = (
+        ((1 - iot2.mtr) / iot2.mtr)
+        * ((1 - iot2.F) / (iot2.z * iot2.f))
+        * (1 - iot2.F - (g_z.sum() - np.cumsum(g_z)))
+    )
+    # derivation from JJZ analytical solution that doesn't involved integration
+    eti_beliefs_jjz = (g_z - 1) / (
+        (iot2.theta_z * (iot2.mtr / (1 - iot2.mtr)))
+        + (iot2.z * (iot2.mtr_prime / (1 - iot2.mtr) ** 2))
+    )
+
+    return eti_beliefs_lw, eti_beliefs_jjz
 
 
 def wm(value, weight):
