@@ -5,6 +5,7 @@ import scipy
 from statsmodels.nonparametric.kernel_regression import KernelReg
 from scipy.interpolate import UnivariateSpline
 
+
 class IOT:
     """
     Constructor for the IOT class.
@@ -68,7 +69,7 @@ class IOT:
             # assume that eti can't go beyond 1 (or the max of the eti_values provided)
             eti_spl = UnivariateSpline(
                 eti["knot_points"], eti["eti_values"], k=1, s=0
-                )
+            )
             self.eti = eti_spl(self.z)
         # compute marginal tax rate schedule
         self.mtr, self.mtr_prime = self.compute_mtr_dist(
@@ -259,10 +260,7 @@ class IOT:
         g_z = (
             1
             + ((self.theta_z * self.eti * self.mtr) / (1 - self.mtr))
-            + (
-                (self.eti * self.z * self.mtr_prime)
-                / (1 - self.mtr) ** 2
-            )
+            + ((self.eti * self.z * self.mtr_prime) / (1 - self.mtr) ** 2)
         )
         # use Lockwood and Weinzierl formula, which should be equivalent but using numerical differentiation
         bracket_term = (

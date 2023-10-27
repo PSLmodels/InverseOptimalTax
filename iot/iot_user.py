@@ -215,10 +215,7 @@ class iot_comparison:
         g2 = (
             0
             + ((0 * self.iot[k].eti * df.mtr) / (1 - df.mtr))
-            + (
-                (self.iot[k].eti * df.z * df.mtr_prime)
-                / (1 - df.mtr) ** 2
-            )
+            + ((self.iot[k].eti * df.z * df.mtr_prime) / (1 - df.mtr) ** 2)
         )
         plot_df = pd.DataFrame(
             {
