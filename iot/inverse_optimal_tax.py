@@ -67,8 +67,12 @@ class IOT:
             assert len(eti["knot_points"]) == len(eti["eti_values"])
             # want to interpolate across income distribution with knot points
             # assume that eti can't go beyond 1 (or the max of the eti_values provided)
+            if len(eti["knot_points"]) > 3:
+                spline_order = 3
+            else:
+                spline_order = 1
             eti_spl = UnivariateSpline(
-                eti["knot_points"], eti["eti_values"], k=1, s=0
+                eti["knot_points"], eti["eti_values"], k=spline_order, s=0
             )
             self.eti = eti_spl(self.z)
         # compute marginal tax rate schedule
@@ -276,7 +280,7 @@ class IOT:
         return g_z, g_z_numerical
 
 
-def find_eti(iot1, iot2, g_z_type="g_z_numerical"):
+def find_eti(iot1, iot2, g_z_type="g_z"):
     """
     This function solves for the ETI that would result in the
     policy represented via MTRs in iot2 be consistent with the
@@ -302,9 +306,8 @@ def find_eti(iot1, iot2, g_z_type="g_z_numerical"):
         g_z = iot1.g_z_numerical
     # The equation below is a simplication of the above to make the integration easier
     eti_beliefs_lw = (
-        ((1 - iot2.mtr) / iot2.mtr)
-        * ((1 - iot2.F) / (iot2.z * iot2.f))
-        * (1 - iot2.F - (g_z.sum() - np.cumsum(g_z)))
+        ((1 - iot2.mtr) / (iot2.z * iot2.f * iot2.mtr)) *
+        (1 - iot2.F - (g_z.sum() - np.cumsum(g_z)))
     )
     # derivation from JJZ analytical solution that doesn't involved integration
     eti_beliefs_jjz = (g_z - 1) / (
