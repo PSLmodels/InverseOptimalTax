@@ -305,9 +305,8 @@ def find_eti(iot1, iot2, g_z_type="g_z"):
     else:
         g_z = iot1.g_z_numerical
     # The equation below is a simplication of the above to make the integration easier
-    eti_beliefs_lw = (
-        ((1 - iot2.mtr) / (iot2.z * iot2.f * iot2.mtr)) *
-        (1 - iot2.F - (g_z.sum() - np.cumsum(g_z)))
+    eti_beliefs_lw = ((1 - iot2.mtr) / (iot2.z * iot2.f * iot2.mtr)) * (
+        1 - iot2.F - (g_z.sum() - np.cumsum(g_z))
     )
     # derivation from JJZ analytical solution that doesn't involved integration
     eti_beliefs_jjz = (g_z - 1) / (
