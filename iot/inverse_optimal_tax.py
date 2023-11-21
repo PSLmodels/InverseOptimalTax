@@ -287,7 +287,7 @@ def find_eti(iot1, iot2, g_z_type="g_z"):
     social welfare function inferred from the policies of iot1.
 
     .. math::
-            \varepilon_{z} = \frac{(1-T'(z))}{T'(z)}\frac{(1-F(z))}{zf(z)}\int_{z}^{\infty}\frac{1-g_{\tilde{z}}{1-F(y)}dF(\tilde{z})
+            \varepsilon_{z} = \frac{(1-T'(z))}{T'(z)}\frac{(1-F(z))}{zf(z)}\int_{z}^{\infty}\frac{1-g_{\tilde{z}}{1-F(y)}dF(\tilde{z})
 
     Args:
         iot1 (IOT): IOT class instance representing baseline policy
