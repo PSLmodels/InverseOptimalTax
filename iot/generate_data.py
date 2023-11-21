@@ -63,9 +63,7 @@ def gen_microdata(
                 baseline = tc.Policy.read_json_reform(s)
             else:
                 baseline = s
-            pol1.implement_reform(
-                baseline, print_warnings=False, raise_errors=False
-            )
+            pol1.implement_reform(baseline, print_warnings=False, raise_errors=False)
     else:
         pol1 = tc.Policy()
 
