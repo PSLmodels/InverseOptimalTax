@@ -130,7 +130,9 @@ class IOT:
                     for each income bin
         """
         bins = 1000  # number of equal-width bins
-        data.loc[:, ["z_bin"]] = pd.cut(data[income_measure], bins, include_lowest=True)
+        data.loc[:, ["z_bin"]] = pd.cut(
+            data[income_measure], bins, include_lowest=True
+        )
         binned_data = pd.DataFrame(
             data[["mtr", income_measure, "z_bin", weight_var]]
             .groupby(["z_bin"])
@@ -189,11 +191,14 @@ class IOT:
         # drop zero income observations
         data = data[data[income_measure] > 0]
         if dist_type == "log_normal":
-            mu = (np.log(data[income_measure]) * data[weight_var]).sum() / data[
-                weight_var
-            ].sum()
+            mu = (
+                np.log(data[income_measure]) * data[weight_var]
+            ).sum() / data[weight_var].sum()
             sigmasq = (
-                (((np.log(data[income_measure]) - mu) ** 2) * data[weight_var]).values
+                (
+                    ((np.log(data[income_measure]) - mu) ** 2)
+                    * data[weight_var]
+                ).values
                 / data[weight_var].sum()
             ).sum()
             # F = st.lognorm.cdf(z_line, s=(sigmasq) ** 0.5, scale=np.exp(mu))
@@ -204,7 +209,10 @@ class IOT:
             # analytical derivative of lognormal
             sigma = np.sqrt(sigmasq)
             F = (1 / 2) * (
-                1 + scipy.special.erf((np.log(z_line) - mu) / (np.sqrt(2) * sigma))
+                1
+                + scipy.special.erf(
+                    (np.log(z_line) - mu) / (np.sqrt(2) * sigma)
+                )
             )
             f = (
                 (1 / (sigma * np.sqrt(2 * np.pi)))
@@ -261,7 +269,9 @@ class IOT:
         )
         # use Lockwood and Weinzierl formula, which should be equivalent but using numerical differentiation
         bracket_term = (
-            1 - self.F - (self.mtr / (1 - self.mtr)) * self.eti * self.z * self.f
+            1
+            - self.F
+            - (self.mtr / (1 - self.mtr)) * self.eti * self.z * self.f
         )
         # d_dz_bracket = np.gradient(bracket_term, edge_order=2)
         d_dz_bracket = np.diff(bracket_term) / np.diff(self.z)
