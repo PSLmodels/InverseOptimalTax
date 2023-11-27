@@ -3,7 +3,7 @@
 <!DOCTYPE html>
 
 
-<html lang="en" >
+<html lang="en" data-content_root="" >
 
   <head>
     <meta charset="utf-8" />
@@ -18,12 +18,12 @@
   </script>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../_static/styles/theme.css?digest=c5ced968eda925caa686" rel="stylesheet" />
-<link href="../../_static/styles/bootstrap.css?digest=c5ced968eda925caa686" rel="stylesheet" />
-<link href="../../_static/styles/pydata-sphinx-theme.css?digest=c5ced968eda925caa686" rel="stylesheet" />
+  <link href="../../_static/styles/theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+<link href="../../_static/styles/bootstrap.css?digest=5b4479735964841361fd" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
 
   
-  <link href="../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=c5ced968eda925caa686" rel="stylesheet" />
+  <link href="../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=5b4479735964841361fd" rel="stylesheet" />
   <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
@@ -37,9 +37,9 @@
     <link rel="stylesheet" type="text/css" href="../../_static/design-style.4045f2051d55cab465a707391d5b2007.min.css" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=c5ced968eda925caa686" />
-<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=c5ced968eda925caa686" />
-  <script src="../../_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=c5ced968eda925caa686"></script>
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=5b4479735964841361fd" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd" />
+  <script src="../../_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=5b4479735964841361fd"></script>
 
     <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
     <script src="../../_static/jquery.js"></script>
@@ -136,6 +136,7 @@ const thebe_selector_output = ".output, .cell_output"
   
     <div class="sidebar-primary-items__start sidebar-primary__section">
         <div class="sidebar-primary-item">
+
   
 
 <a class="navbar-brand logo" href="../../content/intro/intro.html">
@@ -285,6 +286,7 @@ const thebe_selector_output = ".output, .cell_output"
 </button>
 
 
+
 <script>
 document.write(`
   <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
@@ -294,6 +296,7 @@ document.write(`
   </button>
 `);
 </script>
+
 
 <script>
 document.write(`
@@ -333,6 +336,7 @@ document.write(`
 <span class="kn">import</span> <span class="nn">scipy.stats</span> <span class="k">as</span> <span class="nn">st</span>
 <span class="kn">import</span> <span class="nn">scipy</span>
 <span class="kn">from</span> <span class="nn">statsmodels.nonparametric.kernel_regression</span> <span class="kn">import</span> <span class="n">KernelReg</span>
+<span class="kn">from</span> <span class="nn">scipy.interpolate</span> <span class="kn">import</span> <span class="n">UnivariateSpline</span>
 
 
 <div class="viewcode-block" id="IOT"><a class="viewcode-back" href="../../content/api/inverse_optimal_tax.html#iot.inverse_optimal_tax.IOT">[docs]</a><span class="k">class</span> <span class="nc">IOT</span><span class="p">:</span>
@@ -349,7 +353,7 @@ document.write(`
 <span class="sd">            weight_var, mtr</span>
 <span class="sd">        income_measure (str): name of income measure from data to use</span>
 <span class="sd">        weight_var (str): name of weight measure from data to use</span>
-<span class="sd">        inc_elast (scalar): compensated elasticity of taxable income</span>
+<span class="sd">        eti (scalar): compensated elasticity of taxable income</span>
 <span class="sd">            w.r.t. the marginal tax rate</span>
 <span class="sd">        bandwidth (scalar): size of income bins in units of income</span>
 <span class="sd">        lower_bound (scalar): minimum income to consider</span>
@@ -368,7 +372,7 @@ document.write(`
         <span class="n">data</span><span class="p">,</span>
         <span class="n">income_measure</span><span class="o">=</span><span class="s2">&quot;e00200&quot;</span><span class="p">,</span>
         <span class="n">weight_var</span><span class="o">=</span><span class="s2">&quot;s006&quot;</span><span class="p">,</span>
-        <span class="n">inc_elast</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span>
+        <span class="n">eti</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span>
         <span class="n">bandwidth</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
         <span class="n">lower_bound</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
         <span class="n">upper_bound</span><span class="o">=</span><span class="mi">500000</span><span class="p">,</span>
@@ -384,14 +388,33 @@ document.write(`
         <span class="c1">#     (data[income_measure] &gt;= lower_bound)</span>
         <span class="c1">#     &amp; (data[income_measure] &lt;= upper_bound)</span>
         <span class="c1"># ]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">inc_elast</span> <span class="o">=</span> <span class="n">inc_elast</span>
+        <span class="c1"># Get income distribution</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">z</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">F</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">f</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_prime</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_income_dist</span><span class="p">(</span>
             <span class="n">data</span><span class="p">,</span> <span class="n">income_measure</span><span class="p">,</span> <span class="n">weight_var</span><span class="p">,</span> <span class="n">dist_type</span><span class="p">,</span> <span class="n">kde_bw</span>
         <span class="p">)</span>
+        <span class="c1"># see if eti is a scalar</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">eti</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">eti</span> <span class="o">=</span> <span class="n">eti</span>
+        <span class="k">else</span><span class="p">:</span>  <span class="c1"># if not, then it should be a dict with keys containing lists as values</span>
+            <span class="c1"># check that same number of ETI values as knot points</span>
+            <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">eti</span><span class="p">[</span><span class="s2">&quot;knot_points&quot;</span><span class="p">])</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">eti</span><span class="p">[</span><span class="s2">&quot;eti_values&quot;</span><span class="p">])</span>
+            <span class="c1"># want to interpolate across income distribution with knot points</span>
+            <span class="c1"># assume that eti can&#39;t go beyond 1 (or the max of the eti_values provided)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">eti</span><span class="p">[</span><span class="s2">&quot;knot_points&quot;</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">:</span>
+                <span class="n">spline_order</span> <span class="o">=</span> <span class="mi">3</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">spline_order</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="n">eti_spl</span> <span class="o">=</span> <span class="n">UnivariateSpline</span><span class="p">(</span>
+                <span class="n">eti</span><span class="p">[</span><span class="s2">&quot;knot_points&quot;</span><span class="p">],</span> <span class="n">eti</span><span class="p">[</span><span class="s2">&quot;eti_values&quot;</span><span class="p">],</span> <span class="n">k</span><span class="o">=</span><span class="n">spline_order</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">0</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">eti</span> <span class="o">=</span> <span class="n">eti_spl</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">z</span><span class="p">)</span>
+        <span class="c1"># compute marginal tax rate schedule</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mtr</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mtr_prime</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_mtr_dist</span><span class="p">(</span>
             <span class="n">data</span><span class="p">,</span> <span class="n">weight_var</span><span class="p">,</span> <span class="n">income_measure</span><span class="p">,</span> <span class="n">mtr_smoother</span><span class="p">,</span> <span class="n">mtr_smooth_param</span>
         <span class="p">)</span>
+        <span class="c1"># compute theta_z, the elasticity of the tax base</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">theta_z</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">+</span> <span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">z</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_prime</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">f</span><span class="p">)</span>
+        <span class="c1"># compute the social welfare weights</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">g_z</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">g_z_numerical</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sw_weights</span><span class="p">()</span>
 
 <div class="viewcode-block" id="IOT.df"><a class="viewcode-back" href="../../content/api/inverse_optimal_tax.html#iot.inverse_optimal_tax.IOT.df">[docs]</a>    <span class="k">def</span> <span class="nf">df</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -558,7 +581,8 @@ document.write(`
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns the social welfare weights for a given tax policy.</span>
 
-<span class="sd">        See Jacobs, Jongen, and Zoutman (2017)</span>
+<span class="sd">        See Jacobs, Jongen, and Zoutman (2017) and</span>
+<span class="sd">        Lockwood and Weinzierl (2016) for details.</span>
 
 <span class="sd">        .. math::</span>
 <span class="sd">            g_{z} = 1 + \theta_z \varepsilon^{c}\frac{T&#39;(z)}{(1-T&#39;(z))} +</span>
@@ -573,23 +597,57 @@ document.write(`
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">g_z</span> <span class="o">=</span> <span class="p">(</span>
             <span class="mi">1</span>
-            <span class="o">+</span> <span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">theta_z</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">inc_elast</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">mtr</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">mtr</span><span class="p">))</span>
-            <span class="o">+</span> <span class="p">(</span>
-                <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">inc_elast</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">z</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">mtr_prime</span><span class="p">)</span>
-                <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">mtr</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
-            <span class="p">)</span>
+            <span class="o">+</span> <span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">theta_z</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">eti</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">mtr</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">mtr</span><span class="p">))</span>
+            <span class="o">+</span> <span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">eti</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">z</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">mtr_prime</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">mtr</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
         <span class="p">)</span>
         <span class="c1"># use Lockwood and Weinzierl formula, which should be equivalent but using numerical differentiation</span>
         <span class="n">bracket_term</span> <span class="o">=</span> <span class="p">(</span>
             <span class="mi">1</span>
             <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">F</span>
-            <span class="o">-</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mtr</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">mtr</span><span class="p">))</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">inc_elast</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">z</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">f</span>
+            <span class="o">-</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mtr</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">mtr</span><span class="p">))</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">eti</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">z</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">f</span>
         <span class="p">)</span>
         <span class="c1"># d_dz_bracket = np.gradient(bracket_term, edge_order=2)</span>
         <span class="n">d_dz_bracket</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">bracket_term</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">z</span><span class="p">)</span>
         <span class="n">d_dz_bracket</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">d_dz_bracket</span><span class="p">,</span> <span class="n">d_dz_bracket</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
         <span class="n">g_z_numerical</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">f</span><span class="p">)</span> <span class="o">*</span> <span class="n">d_dz_bracket</span>
         <span class="k">return</span> <span class="n">g_z</span><span class="p">,</span> <span class="n">g_z_numerical</span></div></div>
+
+
+<span class="k">def</span> <span class="nf">find_eti</span><span class="p">(</span><span class="n">iot1</span><span class="p">,</span> <span class="n">iot2</span><span class="p">,</span> <span class="n">g_z_type</span><span class="o">=</span><span class="s2">&quot;g_z&quot;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function solves for the ETI that would result in the</span>
+<span class="sd">    policy represented via MTRs in iot2 be consistent with the</span>
+<span class="sd">    social welfare function inferred from the policies of iot1.</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">            \varepsilon_{z} = \frac{(1-T&#39;(z))}{T&#39;(z)}\frac{(1-F(z))}{zf(z)}\int_{z}^{\infty}\frac{1-g_{\tilde{z}}{1-F(y)}dF(\tilde{z})</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        iot1 (IOT): IOT class instance representing baseline policy</span>
+<span class="sd">        iot2 (IOT): IOT class instance representing reform policy</span>
+<span class="sd">        g_z_type (str): type of social welfare function to use</span>
+<span class="sd">            Options are:</span>
+<span class="sd">            * &#39;g_z&#39; for the analytical formula</span>
+<span class="sd">            * &#39;g_z_numerical&#39; for the numerical approximation</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        eti_beliefs (array-like): vector of ETI beliefs over z</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">g_z_type</span> <span class="o">==</span> <span class="s2">&quot;g_z&quot;</span><span class="p">:</span>
+        <span class="n">g_z</span> <span class="o">=</span> <span class="n">iot1</span><span class="o">.</span><span class="n">g_z</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">g_z</span> <span class="o">=</span> <span class="n">iot1</span><span class="o">.</span><span class="n">g_z_numerical</span>
+    <span class="c1"># The equation below is a simplication of the above to make the integration easier</span>
+    <span class="n">eti_beliefs_lw</span> <span class="o">=</span> <span class="p">((</span><span class="mi">1</span> <span class="o">-</span> <span class="n">iot2</span><span class="o">.</span><span class="n">mtr</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">iot2</span><span class="o">.</span><span class="n">z</span> <span class="o">*</span> <span class="n">iot2</span><span class="o">.</span><span class="n">f</span> <span class="o">*</span> <span class="n">iot2</span><span class="o">.</span><span class="n">mtr</span><span class="p">))</span> <span class="o">*</span> <span class="p">(</span>
+        <span class="mi">1</span> <span class="o">-</span> <span class="n">iot2</span><span class="o">.</span><span class="n">F</span> <span class="o">-</span> <span class="p">(</span><span class="n">g_z</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">g_z</span><span class="p">))</span>
+    <span class="p">)</span>
+    <span class="c1"># derivation from JJZ analytical solution that doesn&#39;t involved integration</span>
+    <span class="n">eti_beliefs_jjz</span> <span class="o">=</span> <span class="p">(</span><span class="n">g_z</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span>
+        <span class="p">(</span><span class="n">iot2</span><span class="o">.</span><span class="n">theta_z</span> <span class="o">*</span> <span class="p">(</span><span class="n">iot2</span><span class="o">.</span><span class="n">mtr</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">iot2</span><span class="o">.</span><span class="n">mtr</span><span class="p">)))</span>
+        <span class="o">+</span> <span class="p">(</span><span class="n">iot2</span><span class="o">.</span><span class="n">z</span> <span class="o">*</span> <span class="p">(</span><span class="n">iot2</span><span class="o">.</span><span class="n">mtr_prime</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">iot2</span><span class="o">.</span><span class="n">mtr</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span>
+    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">eti_beliefs_lw</span><span class="p">,</span> <span class="n">eti_beliefs_jjz</span>
 
 
 <span class="k">def</span> <span class="nf">wm</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">weight</span><span class="p">):</span>
@@ -617,7 +675,7 @@ document.write(`
               
               
                 <footer class="prev-next-footer">
-                  <!-- Previous / next buttons -->
+                  
 <div class="prev-next-area">
 </div>
                 </footer>
@@ -642,6 +700,7 @@ By Jason DeBacker and John P. Ryan
   
   <div class="footer-item">
     
+
   <p class="copyright">
     
       © Copyright 2021.
@@ -668,8 +727,8 @@ By Jason DeBacker and John P. Ryan
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script src="../../_static/scripts/bootstrap.js?digest=c5ced968eda925caa686"></script>
-<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=c5ced968eda925caa686"></script>
+  <script src="../../_static/scripts/bootstrap.js?digest=5b4479735964841361fd"></script>
+<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd"></script>
 
   <footer class="bd-footer">
   </footer>
