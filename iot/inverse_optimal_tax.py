@@ -3,6 +3,7 @@ import pandas as pd
 import scipy.stats as st
 import scipy
 from statsmodels.nonparametric.kernel_regression import KernelReg
+from scipy.interpolate import UnivariateSpline
 
 
 class IOT:
@@ -19,7 +20,7 @@ class IOT:
             weight_var, mtr
         income_measure (str): name of income measure from data to use
         weight_var (str): name of weight measure from data to use
-        inc_elast (scalar): compensated elasticity of taxable income
+        eti (scalar): compensated elasticity of taxable income
             w.r.t. the marginal tax rate
         bandwidth (scalar): size of income bins in units of income
         lower_bound (scalar): minimum income to consider
@@ -38,7 +39,7 @@ class IOT:
         data,
         income_measure="e00200",
         weight_var="s006",
-        inc_elast=0.25,
+        eti=0.25,
         bandwidth=1000,
         lower_bound=0,
         upper_bound=500000,
@@ -54,14 +55,33 @@ class IOT:
         #     (data[income_measure] >= lower_bound)
         #     & (data[income_measure] <= upper_bound)
         # ]
-        self.inc_elast = inc_elast
+        # Get income distribution
         self.z, self.F, self.f, self.f_prime = self.compute_income_dist(
             data, income_measure, weight_var, dist_type, kde_bw
         )
+        # see if eti is a scalar
+        if isinstance(eti, float):
+            self.eti = eti
+        else:  # if not, then it should be a dict with keys containing lists as values
+            # check that same number of ETI values as knot points
+            assert len(eti["knot_points"]) == len(eti["eti_values"])
+            # want to interpolate across income distribution with knot points
+            # assume that eti can't go beyond 1 (or the max of the eti_values provided)
+            if len(eti["knot_points"]) > 3:
+                spline_order = 3
+            else:
+                spline_order = 1
+            eti_spl = UnivariateSpline(
+                eti["knot_points"], eti["eti_values"], k=spline_order, s=0
+            )
+            self.eti = eti_spl(self.z)
+        # compute marginal tax rate schedule
         self.mtr, self.mtr_prime = self.compute_mtr_dist(
             data, weight_var, income_measure, mtr_smoother, mtr_smooth_param
         )
+        # compute theta_z, the elasticity of the tax base
         self.theta_z = 1 + ((self.z * self.f_prime) / self.f)
+        # compute the social welfare weights
         self.g_z, self.g_z_numerical = self.sw_weights()
 
     def df(self):
@@ -228,7 +248,8 @@ class IOT:
         r"""
         Returns the social welfare weights for a given tax policy.
 
-        See Jacobs, Jongen, and Zoutman (2017)
+        See Jacobs, Jongen, and Zoutman (2017) and
+        Lockwood and Weinzierl (2016) for details.
 
         .. math::
             g_{z} = 1 + \theta_z \varepsilon^{c}\frac{T'(z)}{(1-T'(z))} +
@@ -243,23 +264,57 @@ class IOT:
         """
         g_z = (
             1
-            + ((self.theta_z * self.inc_elast * self.mtr) / (1 - self.mtr))
-            + (
-                (self.inc_elast * self.z * self.mtr_prime)
-                / (1 - self.mtr) ** 2
-            )
+            + ((self.theta_z * self.eti * self.mtr) / (1 - self.mtr))
+            + ((self.eti * self.z * self.mtr_prime) / (1 - self.mtr) ** 2)
         )
         # use Lockwood and Weinzierl formula, which should be equivalent but using numerical differentiation
         bracket_term = (
             1
             - self.F
-            - (self.mtr / (1 - self.mtr)) * self.inc_elast * self.z * self.f
+            - (self.mtr / (1 - self.mtr)) * self.eti * self.z * self.f
         )
         # d_dz_bracket = np.gradient(bracket_term, edge_order=2)
         d_dz_bracket = np.diff(bracket_term) / np.diff(self.z)
         d_dz_bracket = np.append(d_dz_bracket, d_dz_bracket[-1])
         g_z_numerical = -(1 / self.f) * d_dz_bracket
         return g_z, g_z_numerical
+
+
+def find_eti(iot1, iot2, g_z_type="g_z"):
+    """
+    This function solves for the ETI that would result in the
+    policy represented via MTRs in iot2 be consistent with the
+    social welfare function inferred from the policies of iot1.
+
+    .. math::
+            \varepsilon_{z} = \frac{(1-T'(z))}{T'(z)}\frac{(1-F(z))}{zf(z)}\int_{z}^{\infty}\frac{1-g_{\tilde{z}}{1-F(y)}dF(\tilde{z})
+
+    Args:
+        iot1 (IOT): IOT class instance representing baseline policy
+        iot2 (IOT): IOT class instance representing reform policy
+        g_z_type (str): type of social welfare function to use
+            Options are:
+            * 'g_z' for the analytical formula
+            * 'g_z_numerical' for the numerical approximation
+
+    Returns:
+        eti_beliefs (array-like): vector of ETI beliefs over z
+    """
+    if g_z_type == "g_z":
+        g_z = iot1.g_z
+    else:
+        g_z = iot1.g_z_numerical
+    # The equation below is a simplication of the above to make the integration easier
+    eti_beliefs_lw = ((1 - iot2.mtr) / (iot2.z * iot2.f * iot2.mtr)) * (
+        1 - iot2.F - (g_z.sum() - np.cumsum(g_z))
+    )
+    # derivation from JJZ analytical solution that doesn't involved integration
+    eti_beliefs_jjz = (g_z - 1) / (
+        (iot2.theta_z * (iot2.mtr / (1 - iot2.mtr)))
+        + (iot2.z * (iot2.mtr_prime / (1 - iot2.mtr) ** 2))
+    )
+
+    return eti_beliefs_lw, eti_beliefs_jjz
 
 
 def wm(value, weight):

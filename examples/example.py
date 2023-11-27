@@ -21,7 +21,7 @@ iot2 = iot_comparison(
     baseline_policies=[None, None],
     labels=["2017 Law", "Biden 2020"],
     years=[2017, 2020],
-    inc_elast=0.2,
+    eti=0.2,
 )
 
 # %%
