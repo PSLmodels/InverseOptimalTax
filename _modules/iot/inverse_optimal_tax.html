@@ -468,7 +468,7 @@ document.write(`
         <span class="p">)</span>
         <span class="n">binned_data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
             <span class="n">data</span><span class="p">[[</span><span class="s2">&quot;mtr&quot;</span><span class="p">,</span> <span class="n">income_measure</span><span class="p">,</span> <span class="s2">&quot;z_bin&quot;</span><span class="p">,</span> <span class="n">weight_var</span><span class="p">]]</span>
-            <span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s2">&quot;z_bin&quot;</span><span class="p">])</span>
+            <span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s2">&quot;z_bin&quot;</span><span class="p">],</span> <span class="n">observed</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
             <span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">wm</span><span class="p">(</span><span class="n">x</span><span class="p">[[</span><span class="s2">&quot;mtr&quot;</span><span class="p">,</span> <span class="n">income_measure</span><span class="p">]],</span> <span class="n">x</span><span class="p">[</span><span class="n">weight_var</span><span class="p">]))</span>
         <span class="p">)</span>
         <span class="c1"># make column 0 into two columns</span>
