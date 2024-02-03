@@ -135,7 +135,7 @@ class IOT:
         )
         binned_data = pd.DataFrame(
             data[["mtr", income_measure, "z_bin", weight_var]]
-            .groupby(["z_bin"])
+            .groupby(["z_bin"], observed=False)
             .apply(lambda x: wm(x[["mtr", income_measure]], x[weight_var]))
         )
         # make column 0 into two columns
