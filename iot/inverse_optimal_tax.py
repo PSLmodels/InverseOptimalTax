@@ -43,6 +43,7 @@ class IOT:
         bandwidth=1000,
         lower_bound=0,
         upper_bound=500000,
+        pareto_cutoff=200_000,
         dist_type="log_normal",
         kde_bw=None,
         mtr_smoother="kreg",
@@ -57,7 +58,7 @@ class IOT:
         # ]
         # Get income distribution
         self.z, self.F, self.f, self.f_prime = self.compute_income_dist(
-            data, income_measure, weight_var, dist_type, kde_bw
+            data, income_measure, weight_var, dist_type, kde_bw, pareto_cutoff
         )
         # see if eti is a scalar
         if isinstance(eti, float):
@@ -160,7 +161,7 @@ class IOT:
         return mtr, mtr_prime
 
     def compute_income_dist(
-        self, data, income_measure, weight_var, dist_type, kde_bw=None
+        self, data, income_measure, weight_var, dist_type, kde_bw=None, pareto_cutoff=None
     ):
         """
         Compute the distribution of income (parametrically or not) from
@@ -227,6 +228,67 @@ class IOT:
                     / (z_line**2 * sigma**3 * np.sqrt(2 * np.pi))
                 )
             )
+        elif dist_type == "log_normal_pareto": 
+            # lognormal before cutoff, pareto after
+            def lognormal_pareto_pdf(x, mu, sigma, b, cutoff):
+                # for continuity at cutoff
+                c = st.lognorm.pdf(cutoff, sigma, scale=np.exp(mu)) * cutoff / b
+                # for renormalization, derived analytically    
+                integral = st.lognorm.cdf(cutoff, sigma, scale=np.exp(mu)) + c 
+                return np.where(x <= cutoff, st.lognorm.pdf(x, sigma, scale=np.exp(mu)), c*b*cutoff**b / x**(b+1)) / integral
+
+            if pareto_cutoff is None:
+                def weighted_log_likelihood(params):
+                    mu, sigma, b, cutoff = params
+                    # penalize negative values
+                    if sigma < 0 or b < 0 or cutoff < 0:
+                        return float('inf')
+                    # return negative log likelihood for minimization
+                    return -np.sum(np.log(lognormal_pareto_pdf(data[income_measure], mu, sigma, b, cutoff)) * data[weight_var])
+            else:
+                def weighted_log_likelihood(params):
+                    mu, sigma, b = params
+                    # penalize negative values
+                    if sigma < 0 or b < 0:
+                        return float('inf')
+                    # return negative log likelihood for minimization
+                    return -np.sum(np.log(lognormal_pareto_pdf(data[income_measure], mu, sigma, b, pareto_cutoff)) * data[weight_var])
+
+            mu_guess = (
+                np.log(data[income_measure]) * data[weight_var]
+                ).sum() / data[weight_var].sum()
+            sigmasq_guess = (
+                (
+                    ((np.log(data[income_measure]) - mu_guess) ** 2)
+                    * data[weight_var]
+                ).values
+                / data[weight_var].sum()
+                ).sum()
+            b_guess = 2
+
+            # maximize log likelihood
+            if pareto_cutoff is None:
+                cutoff_guess = 200_000
+                params_guess = np.array([mu_guess, np.sqrt(sigmasq_guess), b_guess, cutoff_guess])
+                mu, sigma, b, cutoff = scipy.optimize.minimize(weighted_log_likelihood, params_guess, method='Nelder-Mead').x
+            else:
+                params_guess = np.array([mu_guess, np.sqrt(sigmasq_guess), b_guess])
+                mu, sigma, b = scipy.optimize.minimize(weighted_log_likelihood, params_guess, method='Nelder-Mead').x
+                cutoff = pareto_cutoff
+
+            c = st.lognorm.pdf(cutoff, sigma, scale=np.exp(mu)) * cutoff / b
+            integral = st.lognorm.cdf(cutoff, sigma, scale=np.exp(mu)) + c
+
+            f = lognormal_pareto_pdf(z_line, mu, sigma, b, cutoff)
+            F = np.where(z_line <= cutoff, st.lognorm.cdf(z_line, sigma, scale=np.exp(mu)), 
+                         st.lognorm.cdf(cutoff, sigma, scale=np.exp(mu)) + c*(1 - (cutoff / z_line)**b)) / integral
+            f_prime = np.where(z_line <= cutoff, -1 *
+                np.exp(-((np.log(z_line) - mu) ** 2) / (2 * sigma**2))
+                * (
+                    (np.log(z_line) + sigma**2 - mu)
+                    / (z_line**2 * sigma**3 * np.sqrt(2 * np.pi))
+                ),
+                (-c * b * (b+1) * cutoff**b / z_line**(b+2))) / integral
         elif dist_type == "kde":
             # uses the original full data for kde estimation
             f_function = st.gaussian_kde(
@@ -234,10 +296,28 @@ class IOT:
                 # bw_method=kde_bw,
                 weights=data[weight_var],
             )
-            F = f_function.cdf(z_line)
             f = f_function.pdf(z_line)
-            f = f / np.sum(f)
+            F = np.cumsum(f)
             f_prime = np.gradient(f, edge_order=2)
+        elif dist_type == "kde_pareto":
+            cutoff = pareto_cutoff
+            # use kde before cutoff, pareto after
+            kde = st.gaussian_kde(
+                data[income_measure],
+                # bw_method=kde_bw,
+                weights=data[weight_var],
+            )
+
+            # take subset of data above pareto_cutoff
+            data_pareto = data[data[income_measure] > pareto_cutoff]
+            b = sum(data_pareto[weight_var]) / sum(data_pareto[weight_var] * np.log(data_pareto[income_measure] / pareto_cutoff))
+            # for continuity at cutoff
+            c = kde(cutoff) * cutoff / b
+            # for renormalization, derived analytically    
+            integral = kde.integrate_box_1d(0, cutoff) + c 
+            f = np.where(z_line < cutoff, kde.pdf(z_line), c*b*cutoff**b / z_line**(b+1)) / integral
+            F = np.where(z_line < cutoff, np.cumsum(f), (integral - c  + c*(1 - (cutoff / z_line)**b)) / integral)
+            f_prime = np.where(z_line < cutoff, np.gradient(f, edge_order=2) , -c * b * (b+1) * cutoff**b / z_line**(b+2) / integral)
         else:
             print("Please enter a valid value for dist_type")
             assert False
