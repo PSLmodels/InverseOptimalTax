@@ -136,7 +136,7 @@ class IOT:
         )
         binned_data = pd.DataFrame(
             data[["mtr", income_measure, "z_bin", weight_var]]
-            .groupby(["z_bin"])
+            .groupby(["z_bin"], observed=False)
             .apply(lambda x: wm(x[["mtr", income_measure]], x[weight_var]))
         )
         # make column 0 into two columns
@@ -228,7 +228,7 @@ class IOT:
                     / (z_line**2 * sigma**3 * np.sqrt(2 * np.pi))
                 )
             )
-        elif dist_type == "log_normal_pareto": 
+        elif dist_type == "log_normal_pareto_mle": 
             # lognormal before cutoff, pareto after
             def lognormal_pareto_pdf(x, mu, sigma, b, cutoff):
                 # for continuity at cutoff
@@ -276,10 +276,45 @@ class IOT:
                 mu, sigma, b = scipy.optimize.minimize(weighted_log_likelihood, params_guess, method='Nelder-Mead').x
                 cutoff = pareto_cutoff
 
+            # assert that mu, sigma, b, and cutoff are all positive
+            assert mu > 0 and sigma > 0 and b > 0 and cutoff > 0
+            # assert that sigma, b and cutoff not too large
+            assert sigma < 25 and b < 25 and cutoff < 1_000_000
+
             c = st.lognorm.pdf(cutoff, sigma, scale=np.exp(mu)) * cutoff / b
             integral = st.lognorm.cdf(cutoff, sigma, scale=np.exp(mu)) + c
 
             f = lognormal_pareto_pdf(z_line, mu, sigma, b, cutoff)
+            F = np.where(z_line <= cutoff, st.lognorm.cdf(z_line, sigma, scale=np.exp(mu)), 
+                         st.lognorm.cdf(cutoff, sigma, scale=np.exp(mu)) + c*(1 - (cutoff / z_line)**b)) / integral
+            f_prime = np.where(z_line <= cutoff, -1 *
+                np.exp(-((np.log(z_line) - mu) ** 2) / (2 * sigma**2))
+                * (
+                    (np.log(z_line) + sigma**2 - mu)
+                    / (z_line**2 * sigma**3 * np.sqrt(2 * np.pi))
+                ),
+                (-c * b * (b+1) * cutoff**b / z_line**(b+2))) / integral
+        elif dist_type == "log_normal_pareto_sequential":
+            # requires a cutoff
+            cutoff = pareto_cutoff
+            data_pareto = data[data[income_measure] > pareto_cutoff]
+            b = sum(data_pareto[weight_var]) / sum(data_pareto[weight_var] * np.log(data_pareto[income_measure] / pareto_cutoff))
+            # for continuity at cutoff
+            mu = (
+                np.log(data[income_measure]) * data[weight_var]
+                ).sum() / data[weight_var].sum()
+            sigma = np.sqrt((
+                (
+                    ((np.log(data[income_measure]) - mu) ** 2)
+                    * data[weight_var]
+                ).values
+                / data[weight_var].sum()
+                ).sum())
+
+            c = st.lognorm.pdf(cutoff, sigma, scale=np.exp(mu)) * cutoff / b
+            # for renormalization, derived analytically
+            integral = st.lognorm.cdf(cutoff, sigma, scale=np.exp(mu)) + c
+            f = np.where(z_line < cutoff, st.lognorm.pdf(z_line, sigma, scale=np.exp(mu)), c*b*cutoff**b / z_line**(b+1)) / integral
             F = np.where(z_line <= cutoff, st.lognorm.cdf(z_line, sigma, scale=np.exp(mu)), 
                          st.lognorm.cdf(cutoff, sigma, scale=np.exp(mu)) + c*(1 - (cutoff / z_line)**b)) / integral
             f_prime = np.where(z_line <= cutoff, -1 *
