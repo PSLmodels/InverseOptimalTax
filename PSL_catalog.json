@@ -1,0 +1,29 @@
+{
+    "name": "Inverse Optimal Tax",
+    "img": "",
+    "banner_title": "Inverse Optimal Tax",
+    "banner_subtitle": "A model of inverse optimal taxation.",
+    "detailed_description": "A model of inverse optimal taxation.",
+    "policy_area": "Optimal Taxation, Inverse Optimal Taxation, Individual Income Tax",
+    "geography": "United States",
+    "language": "Python",
+    "maintainers": [
+      {
+        "name": "Jason DeBacker",
+        "image": "https://avatars.githubusercontent.com/u/10715924?v=4",
+        "link": "https://github.com/jdebacker/"
+      },
+      {
+        "name": "John P. Ryan",
+        "image": "https://avatars.githubusercontent.com/u/83313096?v=4",
+        "link": "https://github.com/john-p-ryan"
+      }
+    ],
+    "links": {
+      "code_repository": "https://github.com/PSLmodels/InverseOptimalTax",
+      "user_documentation": "https://pslmodels.github.io/InverseOptimalTax/content/intro/intro.html",
+      "contributor_documentation": "https://pslmodels.github.io/InverseOptimalTax/content/intro/contributing.html",
+      "webapp": "",
+      "recent_changes": ""
+    }
+  }
