@@ -120,7 +120,7 @@ As per Diamond (1998), we take preferences to be GHH, which has the interpretati
 
 $$U(c, l) = c - \psi (\varepsilon l^{\frac{1}{\varepsilon}})$$
 
-where $\varepsilon$ is the elasticity of taxable income. Thus, $u'(c) = 1$, and $x \frac{v''(x)}{v'(x)} = \frac{1}{\epsilon}-1$. Also note that there is a 1 to 1 mapping between $\theta$ and $z$ under incentive compatibility. Thus, we can replace $\theta$ with $z$ in the formula. However, one should be careful that we now are using $f$ as the virtual density, which makes the assumption that taxes are linearized around $T(z)$. This is fine as long as individuals are not optimizing with respect to a highly nonlinear tax code. Therefore, the formula becomes:
+where $\varepsilon$ is the elasticity of taxable income. Thus, $u'(c) = 1$, and $x \frac{v''(x)}{v'(x)} = \frac{1}{\epsilon}-1$. Also note that there is a 1 to 1 mapping between $\theta$ and $z$ under incentive compatibility. This gives us the intuition that we can replace $\theta$ with $z$. While this is an oversimplification, Saez (2001) shows that the formula with $z$ does indeed hold. However, one should be careful that we now are using $f$ as the virtual density, which makes the assumption that taxes are linearized around $T(z)$. This is fine as long as individuals are not optimizing with respect to a highly nonlinear tax code. Therefore, the formula becomes:
 
 
 $$

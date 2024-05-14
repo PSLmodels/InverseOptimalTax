@@ -40,7 +40,6 @@ class IOT:
         income_measure="e00200",
         weight_var="s006",
         eti=0.25,
-        pareto_cutoff=200_000,
         dist_type="log_normal",
         kde_bw=None,
         mtr_smoother="kreg",
@@ -55,7 +54,7 @@ class IOT:
         # ]
         # Get income distribution
         self.z, self.F, self.f, self.f_prime = self.compute_income_dist(
-            data, income_measure, weight_var, dist_type, kde_bw, pareto_cutoff
+            data, income_measure, weight_var, dist_type, kde_bw
         )
         # see if eti is a scalar
         if isinstance(eti, float):
@@ -158,7 +157,7 @@ class IOT:
         return mtr, mtr_prime
 
     def compute_income_dist(
-        self, data, income_measure, weight_var, dist_type, kde_bw=None, pareto_cutoff=None
+        self, data, income_measure, weight_var, dist_type, kde_bw=None
     ):
         """
         Compute the distribution of income (parametrically or not) from
@@ -234,60 +233,57 @@ class IOT:
             )
             f = f_function.pdf(z_line)
             F = np.cumsum(f)
-            f_prime = np.gradient(f, edge_order=2)
-        elif dist_type == "kde_pareto":
-            cutoff = pareto_cutoff
-            # use kde before cutoff, pareto after
-            kde = st.gaussian_kde(
-                data[income_measure],
-                # bw_method=kde_bw,
-                weights=data[weight_var],
-            )
-
-            # take subset of data above pareto_cutoff
-            data_pareto = data[data[income_measure] > pareto_cutoff]
-            b = sum(data_pareto[weight_var]) / sum(data_pareto[weight_var] * np.log(data_pareto[income_measure] / pareto_cutoff))
-            # for continuity at cutoff
-            c = kde(cutoff) * cutoff / b
-            # for renormalization, derived analytically    
-            integral = kde.integrate_box_1d(0, cutoff) + c 
-            f = np.where(z_line < cutoff, kde.pdf(z_line), c*b*cutoff**b / z_line**(b+1)) / integral
-            F = np.where(z_line < cutoff, np.cumsum(f), (integral - c  + c*(1 - (cutoff / z_line)**b)) / integral)
-            f_prime = np.where(z_line < cutoff, np.gradient(f, edge_order=2) , -c * b * (b+1) * cutoff**b / z_line**(b+2) / integral)
-        
+            f_prime = np.gradient(f, edge_order=2)         
         elif dist_type == "Pln":
             def pln_pdf(y, mu, sigma, alpha):
                 x1 = alpha * sigma - (np.log(y) - mu) / sigma
                 phi = st.norm.pdf((np.log(y) - mu) / sigma)
-                R = (1 - st.norm.cdf(x1)) / (st.norm.pdf(x1) + 1e-15) # 1e-15 to avoid division by zero
+                R = (1 - st.norm.cdf(x1)) / (st.norm.pdf(x1) + 1e-15)  
+                # 1e-15 to avoid division by zero
                 pdf = alpha / y * phi * R
                 return pdf
 
             def neg_weighted_log_likelihood(params, data, weights):
                 mu, sigma, alpha = params
-                likelihood = np.sum(weights * np.log(pln_pdf(data, mu, sigma, alpha) + 1e-15)) # 1e-15 to avoid log(0)
+                likelihood = np.sum(weights * np.log(pln_pdf(data, mu, sigma, alpha) + 1e-15))  
+                # 1e-15 to avoid log(0)
                 return -likelihood
 
             def fit_pln(data, weights, initial_guess):
                 bounds = [(None, None), (0.01, None), (0.01, None)]
-                result = scipy.optimize.minimize(neg_weighted_log_likelihood, initial_guess, args=(data, weights), 
-                                                 method='L-BFGS-B', bounds=bounds)
+                result = scipy.optimize.minimize(
+                    neg_weighted_log_likelihood,
+                    initial_guess,
+                    args=(data, weights),
+                    method="L-BFGS-B",
+                    bounds=bounds,
+                )
                 return result.x
 
-            mu_initial = (np.log(data[income_measure]) * data[weight_var]
-                            ).sum() / data[weight_var].sum()
-            sigmasq = ((((np.log(data[income_measure]) - mu_initial) ** 2)
-                   * data[weight_var]).values / data[weight_var].sum()).sum()
+            mu_initial = (
+                (np.log(data[income_measure]) * data[weight_var]).sum()
+                / data[weight_var].sum()
+            )
+            sigmasq = (
+                (
+                    ((np.log(data[income_measure]) - mu_initial) ** 2)
+                    * data[weight_var]
+                ).values
+                / data[weight_var].sum()
+            ).sum()
             sigma_initial = np.sqrt(sigmasq)
-
-
-            initial_guess = np.array([mu_initial, sigma_initial, 1.5])  # Initial guess for m, sigma, alpha
+            # Initial guess for m, sigma, alpha
+            initial_guess = np.array([mu_initial, sigma_initial, 1.5])  
             mu, sigma, alpha = fit_pln(data[income_measure], data[weight_var], initial_guess)
 
             def pln_cdf(y, mu, sigma, alpha):
                 x1 = alpha * sigma - (np.log(y) - mu) / sigma
                 R = (1 - st.norm.cdf(x1)) / (st.norm.pdf(x1) + 1e-12)
-                return st.norm.cdf((np.log(y) - mu) / sigma) - st.norm.pdf((np.log(y) - mu) / sigma)*R
+                CDF = (
+                    st.norm.cdf((np.log(y) - mu) / sigma) -
+                    st.norm.pdf((np.log(y) - mu) / sigma) * R
+                )
+                return CDF
 
             def pln_dpdf(y, mu, sigma, alpha):
                 x = (np.log(y) - mu) / sigma
@@ -328,6 +324,8 @@ class IOT:
             + ((self.theta_z * self.eti * self.mtr) / (1 - self.mtr))
             + ((self.eti * self.z * self.mtr_prime) / (1 - self.mtr) ** 2)
         )
+        integral = np.trapz(g_z, self.z)
+        g_z = g_z / integral
         # use Lockwood and Weinzierl formula, which should be equivalent but using numerical differentiation
         bracket_term = (
             1
@@ -338,6 +336,8 @@ class IOT:
         d_dz_bracket = np.diff(bracket_term) / np.diff(self.z)
         d_dz_bracket = np.append(d_dz_bracket, d_dz_bracket[-1])
         g_z_numerical = -(1 / self.f) * d_dz_bracket
+        integral = np.trapz(g_z_numerical, self.z)
+        g_z_numerical = g_z_numerical / integral
         return g_z, g_z_numerical
 
 
