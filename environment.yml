@@ -19,3 +19,6 @@ dependencies:
   - black
   - plotly-express
   - kaleido
+  - typing_extensions
+  - jupyter-book
+  - sphinxcontrib-bibtex
