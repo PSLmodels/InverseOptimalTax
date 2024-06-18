@@ -233,19 +233,22 @@ class IOT:
             )
             f = f_function.pdf(z_line)
             F = np.cumsum(f)
-            f_prime = np.gradient(f, edge_order=2)         
+            f_prime = np.gradient(f, edge_order=2)
         elif dist_type == "Pln":
+
             def pln_pdf(y, mu, sigma, alpha):
                 x1 = alpha * sigma - (np.log(y) - mu) / sigma
                 phi = st.norm.pdf((np.log(y) - mu) / sigma)
-                R = (1 - st.norm.cdf(x1)) / (st.norm.pdf(x1) + 1e-15)  
+                R = (1 - st.norm.cdf(x1)) / (st.norm.pdf(x1) + 1e-15)
                 # 1e-15 to avoid division by zero
                 pdf = alpha / y * phi * R
                 return pdf
 
             def neg_weighted_log_likelihood(params, data, weights):
                 mu, sigma, alpha = params
-                likelihood = np.sum(weights * np.log(pln_pdf(data, mu, sigma, alpha) + 1e-15))  
+                likelihood = np.sum(
+                    weights * np.log(pln_pdf(data, mu, sigma, alpha) + 1e-15)
+                )
                 # 1e-15 to avoid log(0)
                 return -likelihood
 
@@ -261,9 +264,8 @@ class IOT:
                 return result.x
 
             mu_initial = (
-                (np.log(data[income_measure]) * data[weight_var]).sum()
-                / data[weight_var].sum()
-            )
+                np.log(data[income_measure]) * data[weight_var]
+            ).sum() / data[weight_var].sum()
             sigmasq = (
                 (
                     ((np.log(data[income_measure]) - mu_initial) ** 2)
@@ -273,23 +275,32 @@ class IOT:
             ).sum()
             sigma_initial = np.sqrt(sigmasq)
             # Initial guess for m, sigma, alpha
-            initial_guess = np.array([mu_initial, sigma_initial, 1.5])  
-            mu, sigma, alpha = fit_pln(data[income_measure], data[weight_var], initial_guess)
+            initial_guess = np.array([mu_initial, sigma_initial, 1.5])
+            mu, sigma, alpha = fit_pln(
+                data[income_measure], data[weight_var], initial_guess
+            )
 
             def pln_cdf(y, mu, sigma, alpha):
                 x1 = alpha * sigma - (np.log(y) - mu) / sigma
                 R = (1 - st.norm.cdf(x1)) / (st.norm.pdf(x1) + 1e-12)
                 CDF = (
-                    st.norm.cdf((np.log(y) - mu) / sigma) -
-                    st.norm.pdf((np.log(y) - mu) / sigma) * R
+                    st.norm.cdf((np.log(y) - mu) / sigma)
+                    - st.norm.pdf((np.log(y) - mu) / sigma) * R
                 )
                 return CDF
 
             def pln_dpdf(y, mu, sigma, alpha):
                 x = (np.log(y) - mu) / sigma
-                R = (1 - st.norm.cdf(alpha * sigma - x)) / (st.norm.pdf(alpha * sigma - x) + 1e-15)
+                R = (1 - st.norm.cdf(alpha * sigma - x)) / (
+                    st.norm.pdf(alpha * sigma - x) + 1e-15
+                )
                 left = (1 + x / sigma) * pln_pdf(y, mu, sigma, alpha)
-                right = alpha * st.norm.pdf(x) * ((alpha * sigma - x) * R - 1) / (sigma * y)
+                right = (
+                    alpha
+                    * st.norm.pdf(x)
+                    * ((alpha * sigma - x) * R - 1)
+                    / (sigma * y)
+                )
                 return -(left + right) / y
 
             f = pln_pdf(z_line, mu, sigma, alpha)
