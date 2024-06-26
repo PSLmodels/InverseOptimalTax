@@ -40,9 +40,6 @@ class IOT:
         income_measure="e00200",
         weight_var="s006",
         eti=0.25,
-        bandwidth=1000,
-        lower_bound=0,
-        upper_bound=500000,
         dist_type="log_normal",
         kde_bw=None,
         mtr_smoother="kreg",
@@ -187,7 +184,7 @@ class IOT:
                 * f_prime (array_like): slope of the density function for
                     income bin z
         """
-        z_line = np.linspace(1, 1000000, 100000)
+        z_line = np.linspace(100, 1000000, 100000)
         # drop zero income observations
         data = data[data[income_measure] > 0]
         if dist_type == "log_normal":
@@ -234,10 +231,81 @@ class IOT:
                 # bw_method=kde_bw,
                 weights=data[weight_var],
             )
-            F = f_function.cdf(z_line)
             f = f_function.pdf(z_line)
-            f = f / np.sum(f)
+            F = np.cumsum(f)
             f_prime = np.gradient(f, edge_order=2)
+        elif dist_type == "Pln":
+
+            def pln_pdf(y, mu, sigma, alpha):
+                x1 = alpha * sigma - (np.log(y) - mu) / sigma
+                phi = st.norm.pdf((np.log(y) - mu) / sigma)
+                R = (1 - st.norm.cdf(x1)) / (st.norm.pdf(x1) + 1e-15)
+                # 1e-15 to avoid division by zero
+                pdf = alpha / y * phi * R
+                return pdf
+
+            def neg_weighted_log_likelihood(params, data, weights):
+                mu, sigma, alpha = params
+                likelihood = np.sum(
+                    weights * np.log(pln_pdf(data, mu, sigma, alpha) + 1e-15)
+                )
+                # 1e-15 to avoid log(0)
+                return -likelihood
+
+            def fit_pln(data, weights, initial_guess):
+                bounds = [(None, None), (0.01, None), (0.01, None)]
+                result = scipy.optimize.minimize(
+                    neg_weighted_log_likelihood,
+                    initial_guess,
+                    args=(data, weights),
+                    method="L-BFGS-B",
+                    bounds=bounds,
+                )
+                return result.x
+
+            mu_initial = (
+                np.log(data[income_measure]) * data[weight_var]
+            ).sum() / data[weight_var].sum()
+            sigmasq = (
+                (
+                    ((np.log(data[income_measure]) - mu_initial) ** 2)
+                    * data[weight_var]
+                ).values
+                / data[weight_var].sum()
+            ).sum()
+            sigma_initial = np.sqrt(sigmasq)
+            # Initial guess for m, sigma, alpha
+            initial_guess = np.array([mu_initial, sigma_initial, 1.5])
+            mu, sigma, alpha = fit_pln(
+                data[income_measure], data[weight_var], initial_guess
+            )
+
+            def pln_cdf(y, mu, sigma, alpha):
+                x1 = alpha * sigma - (np.log(y) - mu) / sigma
+                R = (1 - st.norm.cdf(x1)) / (st.norm.pdf(x1) + 1e-12)
+                CDF = (
+                    st.norm.cdf((np.log(y) - mu) / sigma)
+                    - st.norm.pdf((np.log(y) - mu) / sigma) * R
+                )
+                return CDF
+
+            def pln_dpdf(y, mu, sigma, alpha):
+                x = (np.log(y) - mu) / sigma
+                R = (1 - st.norm.cdf(alpha * sigma - x)) / (
+                    st.norm.pdf(alpha * sigma - x) + 1e-15
+                )
+                left = (1 + x / sigma) * pln_pdf(y, mu, sigma, alpha)
+                right = (
+                    alpha
+                    * st.norm.pdf(x)
+                    * ((alpha * sigma - x) * R - 1)
+                    / (sigma * y)
+                )
+                return -(left + right) / y
+
+            f = pln_pdf(z_line, mu, sigma, alpha)
+            F = pln_cdf(z_line, mu, sigma, alpha)
+            f_prime = pln_dpdf(z_line, mu, sigma, alpha)
         else:
             print("Please enter a valid value for dist_type")
             assert False
@@ -267,6 +335,8 @@ class IOT:
             + ((self.theta_z * self.eti * self.mtr) / (1 - self.mtr))
             + ((self.eti * self.z * self.mtr_prime) / (1 - self.mtr) ** 2)
         )
+        integral = np.trapz(g_z, self.z)
+        g_z = g_z / integral
         # use Lockwood and Weinzierl formula, which should be equivalent but using numerical differentiation
         bracket_term = (
             1
@@ -277,6 +347,8 @@ class IOT:
         d_dz_bracket = np.diff(bracket_term) / np.diff(self.z)
         d_dz_bracket = np.append(d_dz_bracket, d_dz_bracket[-1])
         g_z_numerical = -(1 / self.f) * d_dz_bracket
+        integral = np.trapz(g_z_numerical, self.z)
+        g_z_numerical = g_z_numerical / integral
         return g_z, g_z_numerical
 
 
