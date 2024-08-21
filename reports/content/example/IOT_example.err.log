@@ -1,0 +1,93 @@
+Traceback (most recent call last):
+  File "/usr/share/miniconda/envs/iot-dev/lib/python3.11/site-packages/jupyter_cache/executors/utils.py", line 58, in single_nb_execution
+    executenb(
+  File "/usr/share/miniconda/envs/iot-dev/lib/python3.11/site-packages/nbclient/client.py", line 1314, in execute
+    return NotebookClient(nb=nb, resources=resources, km=km, **kwargs).execute()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/share/miniconda/envs/iot-dev/lib/python3.11/site-packages/jupyter_core/utils/__init__.py", line 165, in wrapped
+    return loop.run_until_complete(inner)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/share/miniconda/envs/iot-dev/lib/python3.11/asyncio/base_events.py", line 654, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/usr/share/miniconda/envs/iot-dev/lib/python3.11/site-packages/nbclient/client.py", line 709, in async_execute
+    await self.async_execute_cell(
+  File "/usr/share/miniconda/envs/iot-dev/lib/python3.11/site-packages/nbclient/client.py", line 1062, in async_execute_cell
+    await self._check_raise_for_error(cell, cell_index, exec_reply)
+  File "/usr/share/miniconda/envs/iot-dev/lib/python3.11/site-packages/nbclient/client.py", line 918, in _check_raise_for_error
+    raise CellExecutionError.from_cell_and_msg(cell, exec_reply_content)
+nbclient.exceptions.CellExecutionError: An error occurred while executing the following cell:
+------------------
+iot1 = iot_comparison(
+    policies=[
+        "https://raw.githubusercontent.com/PSLmodels/examples/main/psl_examples/taxcalc/2017_law.json",
+        "https://raw.githubusercontent.com/PSLmodels/examples/main/psl_examples/taxcalc/Biden2020.json",
+    ],
+    labels=["2017 Law", "Biden 2020"],
+    baseline_policies=[None, None],
+    years=[2023, 2023]
+)
+------------------
+
+
+[0;31m---------------------------------------------------------------------------[0m
+[0;31mValidationError[0m                           Traceback (most recent call last)
+Cell [0;32mIn[2], line 1[0m
+[0;32m----> 1[0m iot1 [38;5;241m=[39m [43miot_comparison[49m[43m([49m
+[1;32m      2[0m [43m    [49m[43mpolicies[49m[38;5;241;43m=[39;49m[43m[[49m
+[1;32m      3[0m [43m        [49m[38;5;124;43m"[39;49m[38;5;124;43mhttps://raw.githubusercontent.com/PSLmodels/examples/main/psl_examples/taxcalc/2017_law.json[39;49m[38;5;124;43m"[39;49m[43m,[49m
+[1;32m      4[0m [43m        [49m[38;5;124;43m"[39;49m[38;5;124;43mhttps://raw.githubusercontent.com/PSLmodels/examples/main/psl_examples/taxcalc/Biden2020.json[39;49m[38;5;124;43m"[39;49m[43m,[49m
+[1;32m      5[0m [43m    [49m[43m][49m[43m,[49m
+[1;32m      6[0m [43m    [49m[43mlabels[49m[38;5;241;43m=[39;49m[43m[[49m[38;5;124;43m"[39;49m[38;5;124;43m2017 Law[39;49m[38;5;124;43m"[39;49m[43m,[49m[43m [49m[38;5;124;43m"[39;49m[38;5;124;43mBiden 2020[39;49m[38;5;124;43m"[39;49m[43m][49m[43m,[49m
+[1;32m      7[0m [43m    [49m[43mbaseline_policies[49m[38;5;241;43m=[39;49m[43m[[49m[38;5;28;43;01mNone[39;49;00m[43m,[49m[43m [49m[38;5;28;43;01mNone[39;49;00m[43m][49m[43m,[49m
+[1;32m      8[0m [43m    [49m[43myears[49m[38;5;241;43m=[39;49m[43m[[49m[38;5;241;43m2023[39;49m[43m,[49m[43m [49m[38;5;241;43m2023[39;49m[43m][49m
+[1;32m      9[0m [43m)[49m
+
+File [0;32m~/work/InverseOptimalTax/InverseOptimalTax/iot/iot_user.py:77[0m, in [0;36miot_comparison.__init__[0;34m(self, years, baseline_policies, policies, labels, data, compare_default, mtr_wrt, income_measure, weight_var, eti, bandwidth, lower_bound, upper_bound, dist_type, kde_bw, mtr_smoother, mtr_smooth_param)[0m
+[1;32m     74[0m [38;5;28mself[39m[38;5;241m.[39mlabels [38;5;241m=[39m labels
+[1;32m     75[0m [38;5;28;01mfor[39;00m i, v [38;5;129;01min[39;00m [38;5;28menumerate[39m(policies):
+[1;32m     76[0m     df[38;5;241m.[39mappend(
+[0;32m---> 77[0m         [43mgen_microdata[49m[43m([49m
+[1;32m     78[0m [43m            [49m[43myear[49m[38;5;241;43m=[39;49m[43myears[49m[43m[[49m[43mi[49m[43m][49m[43m,[49m
+[1;32m     79[0m [43m            [49m[43mdata[49m[38;5;241;43m=[39;49m[43mdata[49m[43m,[49m
+[1;32m     80[0m [43m            [49m[43mbaseline_policy[49m[38;5;241;43m=[39;49m[43mbaseline_policies[49m[43m[[49m[43mi[49m[43m][49m[43m,[49m
+[1;32m     81[0m [43m            [49m[43mreform[49m[38;5;241;43m=[39;49m[43mv[49m[43m,[49m
+[1;32m     82[0m [43m            [49m[43mmtr_wrt[49m[38;5;241;43m=[39;49m[43mmtr_wrt[49m[43m,[49m
+[1;32m     83[0m [43m            [49m[43mincome_measure[49m[38;5;241;43m=[39;49m[43mincome_measure[49m[43m,[49m
+[1;32m     84[0m [43m            [49m[43mweight_var[49m[38;5;241;43m=[39;49m[43mweight_var[49m[43m,[49m
+[1;32m     85[0m [43m        [49m[43m)[49m
+[1;32m     86[0m     )
+[1;32m     87[0m [38;5;66;03m# create results for current law policy[39;00m
+[1;32m     88[0m [38;5;28;01mif[39;00m compare_default:
+
+File [0;32m~/work/InverseOptimalTax/InverseOptimalTax/iot/generate_data.py:78[0m, in [0;36mgen_microdata[0;34m(year, data, baseline_policy, reform, mtr_wrt, income_measure, weight_var)[0m
+[1;32m     75[0m     reform [38;5;241m=[39m tc[38;5;241m.[39mPolicy[38;5;241m.[39mread_json_reform(reform)
+[1;32m     77[0m [38;5;66;03m# Now layer on the reform policy on top of the baseline[39;00m
+[0;32m---> 78[0m [43mpol1[49m[38;5;241;43m.[39;49m[43mimplement_reform[49m[43m([49m[43mreform[49m[43m,[49m[43m [49m[43mprint_warnings[49m[38;5;241;43m=[39;49m[38;5;28;43;01mFalse[39;49;00m[43m,[49m[43m [49m[43mraise_errors[49m[38;5;241;43m=[39;49m[38;5;28;43;01mFalse[39;49;00m[43m)[49m
+[1;32m     80[0m calc1 [38;5;241m=[39m tc[38;5;241m.[39mCalculator(policy[38;5;241m=[39mpol1, records[38;5;241m=[39mrecs)
+[1;32m     81[0m calc1[38;5;241m.[39madvance_to_year(year)
+
+File [0;32m/usr/share/miniconda/envs/iot-dev/lib/python3.11/site-packages/taxcalc/policy.py:121[0m, in [0;36mPolicy.implement_reform[0;34m(self, reform, print_warnings, raise_errors)[0m
+[1;32m    116[0m [38;5;250m[39m[38;5;124;03m"""[39;00m
+[1;32m    117[0m [38;5;124;03mImplement reform using Tax-Calculator syled reforms/adjustments. Users[39;00m
+[1;32m    118[0m [38;5;124;03mmay also use the adjust method with ParamTools styled reforms.[39;00m
+[1;32m    119[0m [38;5;124;03m"""[39;00m
+[1;32m    120[0m [38;5;66;03m# need to do conversion:[39;00m
+[0;32m--> 121[0m [38;5;28;01mreturn[39;00m [38;5;28;43mself[39;49m[38;5;241;43m.[39;49m[43m_update[49m[43m([49m[43mreform[49m[43m,[49m[43m [49m[43mprint_warnings[49m[43m,[49m[43m [49m[43mraise_errors[49m[43m)[49m
+
+File [0;32m/usr/share/miniconda/envs/iot-dev/lib/python3.11/site-packages/taxcalc/parameters.py:589[0m, in [0;36mParameters._update[0;34m(self, revision, print_warnings, raise_errors)[0m
+[1;32m    587[0m     [38;5;28;01melse[39;00m:
+[1;32m    588[0m         msg [38;5;241m=[39m [38;5;124mf[39m[38;5;124m"[39m[38;5;124mParameter [39m[38;5;132;01m{[39;00mparam[38;5;132;01m}[39;00m[38;5;124m does not exist.[39m[38;5;124m"[39m
+[0;32m--> 589[0m     [38;5;28;01mraise[39;00m pt[38;5;241m.[39mValidationError(
+[1;32m    590[0m         {[38;5;124m"[39m[38;5;124merrors[39m[38;5;124m"[39m: {[38;5;124m"[39m[38;5;124mschema[39m[38;5;124m"[39m: msg}},
+[1;32m    591[0m         [38;5;28;01mNone[39;00m
+[1;32m    592[0m     )
+[1;32m    593[0m [38;5;28;01mif[39;00m param[38;5;241m.[39mendswith([38;5;124m"[39m[38;5;124m-indexed[39m[38;5;124m"[39m):
+[1;32m    594[0m     [38;5;28;01mfor[39;00m year, yearval [38;5;129;01min[39;00m val[38;5;241m.[39mitems():
+
+[0;31mValidationError[0m: {
+    "errors": {
+        "schema": "Parameter ID_Charity_crt_all does not exist."
+    }
+}
+
