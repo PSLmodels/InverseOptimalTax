@@ -104,9 +104,9 @@ class iot_comparison:
                     income_measure=income_measure,
                     weight_var=weight_var,
                     eti=eti,
-                    bandwidth=bandwidth,
-                    lower_bound=lower_bound,
-                    upper_bound=upper_bound,
+                    # bandwidth=bandwidth,
+                    # lower_bound=lower_bound,
+                    # upper_bound=upper_bound,
                     dist_type=dist_type,
                     kde_bw=kde_bw,
                     mtr_smoother=mtr_smoother,
@@ -202,39 +202,129 @@ class iot_comparison:
         )
         return fig
 
-    def JJZFig4(self, policy="Current Law"):
+    def JJZFig4(self, policy="Current Law", var="g_z"):
+        """
+        Function to plot a decomposition of the political weights, `g_z`
+
+        Args:
+            policy (str): policy to plot
+            var (str): variable to plot against income
+                Variable options are:
+                 * 'g_z' for analytically derived weights
+                 * 'g_z_numeric' for numerically derived weights
+
+        Returns:
+            fig (plotly.express figure): figure with the decomposition
+        """
         k = self.labels.index(policy)
         df = self.iot[k].df()
-        # g1 with mtr_prime = 0
-        g1 = (
-            0
-            + ((df.theta_z * self.iot[k].eti * df.mtr) / (1 - df.mtr))
-            + ((self.iot[k].eti * df.z * 0) / (1 - df.mtr) ** 2)
-        )
-        # g2 with theta_z = 0
-        g2 = (
-            0
-            + ((0 * self.iot[k].eti * df.mtr) / (1 - df.mtr))
-            + ((self.iot[k].eti * df.z * df.mtr_prime) / (1 - df.mtr) ** 2)
-        )
-        plot_df = pd.DataFrame(
-            {
-                self.income_measure: df.z,
-                "Overall weight": df.g_z,
-                "Tax Base Elasticity": df.g_z - g1,
-                "Nonconstant MTRs": df.g_z - g1 - g2,
-            }
-        )
+        if var == "g_z":
+            # g1 with mtr_prime = 0
+            g1 = (
+                1 +
+                + ((df.theta_z * self.iot[k].eti * df.mtr) / (1 - df.mtr))
+                + ((self.iot[k].eti * df.z * 0) / (1 - df.mtr) ** 2)
+            )
+            # g2 with theta_z = 0
+            g2 = (
+                1 +
+                + ((0 * self.iot[k].eti * df.mtr) / (1 - df.mtr))
+                + ((self.iot[k].eti * df.z * df.mtr_prime) / (1 - df.mtr) ** 2)
+            )
+            integral = np.trapz(g1, df.z)
+            g1 = g1 / integral
+            integral = np.trapz(g2, df.z)
+            # g2 = g2 / integral
+            plot_df = pd.DataFrame(
+                {
+                    self.income_measure: df.z,
+                    "Overall weight": df.g_z,
+                    "Tax Base Elasticity": g1, #df.g_z - g1,
+                    "Nonconstant MTRs": g2, #df.g_z - g1 - g2,
+                }
+            )
+        elif var == "g_z_numerical":
+            # g1 with mtr_prime = 0
+            # do this here by just removing the mtr from the bracket
+            # term before taking derivative
+            bracket_term = (
+                1
+                - df.F
+                - self.iot[k].eti * df.z * df.f
+            )
+            d_dz_bracket = np.diff(bracket_term) / np.diff(df.z)
+            d_dz_bracket = np.append(d_dz_bracket, d_dz_bracket[-1])
+            g1 = -(1 / df.f) * d_dz_bracket
+            integral = np.trapz(g1, df.z)
+            # g1 = g1 / integral
+            g1 += 1
+            # g2 with theta_z = 0
+            # do this by removing the f and z terms from the bracket
+            bracket_term = (
+                1
+                - df.F
+                - (df.mtr / (1 - df.mtr)) * self.iot[k].eti
+            )
+            d_dz_bracket = np.diff(bracket_term) / np.diff(df.z)
+            d_dz_bracket = np.append(d_dz_bracket, d_dz_bracket[-1])
+            g2 = -(1 / df.f) * d_dz_bracket
+            integral = np.trapz(g2, df.z)
+            # g2 = g2 / integral
+            g2 += 1
+            plot_df = pd.DataFrame(
+                {
+                    self.income_measure: df.z,
+                    "Overall weight": df.g_z_numerical,
+                    "Tax Base Elasticity": g1, #df.g_z_numerical - g1,
+                    "Nonconstant MTRs": g2, #df.g_z_numerical - g1 - g2,
+                }
+            )
+        elif var == "g_z_numerical2":
+            # g1 with mtr_prime = 0
+            g1 = (
+                1 +
+                + ((df.theta_z * self.iot[k].eti * df.mtr) / (1 - df.mtr))
+                + ((self.iot[k].eti * df.z * 0) / (1 - df.mtr) ** 2)
+            )
+            # g2 with theta_z = 0
+            g2 = (
+                1+
+                + ((0 * self.iot[k].eti * df.mtr) / (1 - df.mtr))
+                + ((self.iot[k].eti * df.z * df.mtr_prime) / (1 - df.mtr) ** 2)
+            )
+            integral = np.trapz(g1, df.z)
+            # g1 = g1 / integral
+            integral = np.trapz(g2, df.z)
+            # g2 = g2 / integral
+            plot_df = pd.DataFrame(
+                {
+                    self.income_measure: df.z,
+                    "Overall weight": df.g_z_numerical,
+                    "Tax Base Elasticity": g1, #df.g_z_numerical - g1,
+                    "Nonconstant MTRs": g2, #df.g_z_numerical - g1 - g2,
+                }
+            )
         fig = go.Figure()
+        # add a line at y = 1
         fig.add_trace(
             go.Scatter(
-                x=plot_df[self.income_measure],
-                y=plot_df["Overall weight"],
-                fill=None,
+                x=[plot_df[self.income_measure].min(), plot_df[self.income_measure].max()],
+                y=[1, 1],
                 mode="lines",
-                name="Overall weight",
+                line=dict(color="black", width=1, dash="dash"),
+                showlegend=False,
             )
         )
+        # fig.add_trace(
+        #     go.Scatter(
+        #         x=plot_df[self.income_measure],
+        #         y=plot_df["Nonconstant MTRs"],
+        #         fill="tonexty",  # fill area between trace1 and trace2
+        #         # fill="tozeroy",
+        #         mode="lines",
+        #         name="Nonconstant MTRs",
+        #     )
+        # )
         fig.add_trace(
             go.Scatter(
                 x=plot_df[self.income_measure],
@@ -247,10 +337,30 @@ class iot_comparison:
         fig.add_trace(
             go.Scatter(
                 x=plot_df[self.income_measure],
-                y=plot_df["Nonconstant MTRs"],
-                fill="tonexty",  # fill area between trace1 and trace2
+                y=plot_df["Overall weight"],
+                fill="tonexty",
                 mode="lines",
                 name="Nonconstant MTRs",
+            )
+        )
+        # add a line at y=0
+        fig.add_trace(
+            go.Scatter(
+                x=plot_df[self.income_measure],
+                y=plot_df["Overall weight"],
+                mode="lines",
+                line=dict(color="black", width=1, dash="solid"),
+                name="Overall weight",
+                showlegend=False,
+            )
+        )
+        # add a line at y=0
+        fig.add_trace(
+            go.Scatter(
+                x=[plot_df[self.income_measure].min(), plot_df[self.income_measure].max()],
+                y=[0, 0],
+                mode="lines",
+                line=dict(color="black", width=1, dash="dash"),
             )
         )
         fig.update_layout(
