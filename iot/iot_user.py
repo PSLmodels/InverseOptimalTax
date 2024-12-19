@@ -219,83 +219,33 @@ class iot_comparison:
         k = self.labels.index(policy)
         df = self.iot[k].df()
         if var == "g_z":
-            # g1 with mtr_prime = 0
-            g1 = (
-                1
-                + +((df.theta_z * self.iot[k].eti * df.mtr) / (1 - df.mtr))
-                + ((self.iot[k].eti * df.z * 0) / (1 - df.mtr) ** 2)
-            )
-            # g2 with theta_z = 0
-            g2 = (
-                1
-                + +((0 * self.iot[k].eti * df.mtr) / (1 - df.mtr))
-                + ((self.iot[k].eti * df.z * df.mtr_prime) / (1 - df.mtr) ** 2)
-            )
-            integral = np.trapz(g1, df.z)
-            g1 = g1 / integral
-            integral = np.trapz(g2, df.z)
-            # g2 = g2 / integral
-            plot_df = pd.DataFrame(
-                {
-                    self.income_measure: df.z,
-                    "Overall weight": df.g_z,
-                    "Tax Base Elasticity": g1,  # df.g_z - g1,
-                    "Nonconstant MTRs": g2,  # df.g_z - g1 - g2,
-                }
-            )
-        elif var == "g_z_numerical":
-            # g1 with mtr_prime = 0
-            # do this here by just removing the mtr from the bracket
-            # term before taking derivative
-            bracket_term = 1 - df.F - self.iot[k].eti * df.z * df.f
-            d_dz_bracket = np.diff(bracket_term) / np.diff(df.z)
-            d_dz_bracket = np.append(d_dz_bracket, d_dz_bracket[-1])
-            g1 = -(1 / df.f) * d_dz_bracket
-            integral = np.trapz(g1, df.z)
-            # g1 = g1 / integral
-            g1 += 1
-            # g2 with theta_z = 0
-            # do this by removing the f and z terms from the bracket
-            bracket_term = 1 - df.F - (df.mtr / (1 - df.mtr)) * self.iot[k].eti
-            d_dz_bracket = np.diff(bracket_term) / np.diff(df.z)
-            d_dz_bracket = np.append(d_dz_bracket, d_dz_bracket[-1])
-            g2 = -(1 / df.f) * d_dz_bracket
-            integral = np.trapz(g2, df.z)
-            # g2 = g2 / integral
-            g2 += 1
-            plot_df = pd.DataFrame(
-                {
-                    self.income_measure: df.z,
-                    "Overall weight": df.g_z_numerical,
-                    "Tax Base Elasticity": g1,  # df.g_z_numerical - g1,
-                    "Nonconstant MTRs": g2,  # df.g_z_numerical - g1 - g2,
-                }
-            )
-        elif var == "g_z_numerical2":
-            # g1 with mtr_prime = 0
-            g1 = (
-                1
-                + +((df.theta_z * self.iot[k].eti * df.mtr) / (1 - df.mtr))
-                + ((self.iot[k].eti * df.z * 0) / (1 - df.mtr) ** 2)
-            )
-            # g2 with theta_z = 0
-            g2 = (
-                1
-                + +((0 * self.iot[k].eti * df.mtr) / (1 - df.mtr))
-                + ((self.iot[k].eti * df.z * df.mtr_prime) / (1 - df.mtr) ** 2)
-            )
-            integral = np.trapz(g1, df.z)
-            # g1 = g1 / integral
-            integral = np.trapz(g2, df.z)
-            # g2 = g2 / integral
-            plot_df = pd.DataFrame(
-                {
-                    self.income_measure: df.z,
-                    "Overall weight": df.g_z_numerical,
-                    "Tax Base Elasticity": g1,  # df.g_z_numerical - g1,
-                    "Nonconstant MTRs": g2,  # df.g_z_numerical - g1 - g2,
-                }
-            )
+            g_weights = df.g_z
+        else:
+            g_weights = df.g_z_numerical
+
+        # g1 with mtr_prime = 0
+        g1 = (
+            1
+            + +((df.theta_z * self.iot[k].eti * df.mtr) / (1 - df.mtr))
+            + ((self.iot[k].eti * df.z * 0) / (1 - df.mtr) ** 2)
+        )
+        # g2 with theta_z = 0
+        g2 = (
+            1
+            + +((0 * self.iot[k].eti * df.mtr) / (1 - df.mtr))
+            + ((self.iot[k].eti * df.z * df.mtr_prime) / (1 - df.mtr) ** 2)
+        )
+        integral = np.trapz(g1, df.z)
+        g1 = g1 / integral
+        integral = np.trapz(g2, df.z)
+        plot_df = pd.DataFrame(
+            {
+                self.income_measure: df.z,
+                "Overall weight": g_weights,
+                "Tax Base Elasticity": g1,
+                "Nonconstant MTRs": g2,
+            }
+        )
         fig = go.Figure()
         # add a line at y = 1
         fig.add_trace(
