@@ -221,14 +221,14 @@ class iot_comparison:
         if var == "g_z":
             # g1 with mtr_prime = 0
             g1 = (
-                1 +
-                + ((df.theta_z * self.iot[k].eti * df.mtr) / (1 - df.mtr))
+                1
+                + +((df.theta_z * self.iot[k].eti * df.mtr) / (1 - df.mtr))
                 + ((self.iot[k].eti * df.z * 0) / (1 - df.mtr) ** 2)
             )
             # g2 with theta_z = 0
             g2 = (
-                1 +
-                + ((0 * self.iot[k].eti * df.mtr) / (1 - df.mtr))
+                1
+                + +((0 * self.iot[k].eti * df.mtr) / (1 - df.mtr))
                 + ((self.iot[k].eti * df.z * df.mtr_prime) / (1 - df.mtr) ** 2)
             )
             integral = np.trapz(g1, df.z)
@@ -239,19 +239,15 @@ class iot_comparison:
                 {
                     self.income_measure: df.z,
                     "Overall weight": df.g_z,
-                    "Tax Base Elasticity": g1, #df.g_z - g1,
-                    "Nonconstant MTRs": g2, #df.g_z - g1 - g2,
+                    "Tax Base Elasticity": g1,  # df.g_z - g1,
+                    "Nonconstant MTRs": g2,  # df.g_z - g1 - g2,
                 }
             )
         elif var == "g_z_numerical":
             # g1 with mtr_prime = 0
             # do this here by just removing the mtr from the bracket
             # term before taking derivative
-            bracket_term = (
-                1
-                - df.F
-                - self.iot[k].eti * df.z * df.f
-            )
+            bracket_term = 1 - df.F - self.iot[k].eti * df.z * df.f
             d_dz_bracket = np.diff(bracket_term) / np.diff(df.z)
             d_dz_bracket = np.append(d_dz_bracket, d_dz_bracket[-1])
             g1 = -(1 / df.f) * d_dz_bracket
@@ -260,11 +256,7 @@ class iot_comparison:
             g1 += 1
             # g2 with theta_z = 0
             # do this by removing the f and z terms from the bracket
-            bracket_term = (
-                1
-                - df.F
-                - (df.mtr / (1 - df.mtr)) * self.iot[k].eti
-            )
+            bracket_term = 1 - df.F - (df.mtr / (1 - df.mtr)) * self.iot[k].eti
             d_dz_bracket = np.diff(bracket_term) / np.diff(df.z)
             d_dz_bracket = np.append(d_dz_bracket, d_dz_bracket[-1])
             g2 = -(1 / df.f) * d_dz_bracket
@@ -275,21 +267,21 @@ class iot_comparison:
                 {
                     self.income_measure: df.z,
                     "Overall weight": df.g_z_numerical,
-                    "Tax Base Elasticity": g1, #df.g_z_numerical - g1,
-                    "Nonconstant MTRs": g2, #df.g_z_numerical - g1 - g2,
+                    "Tax Base Elasticity": g1,  # df.g_z_numerical - g1,
+                    "Nonconstant MTRs": g2,  # df.g_z_numerical - g1 - g2,
                 }
             )
         elif var == "g_z_numerical2":
             # g1 with mtr_prime = 0
             g1 = (
-                1 +
-                + ((df.theta_z * self.iot[k].eti * df.mtr) / (1 - df.mtr))
+                1
+                + +((df.theta_z * self.iot[k].eti * df.mtr) / (1 - df.mtr))
                 + ((self.iot[k].eti * df.z * 0) / (1 - df.mtr) ** 2)
             )
             # g2 with theta_z = 0
             g2 = (
-                1+
-                + ((0 * self.iot[k].eti * df.mtr) / (1 - df.mtr))
+                1
+                + +((0 * self.iot[k].eti * df.mtr) / (1 - df.mtr))
                 + ((self.iot[k].eti * df.z * df.mtr_prime) / (1 - df.mtr) ** 2)
             )
             integral = np.trapz(g1, df.z)
@@ -300,15 +292,18 @@ class iot_comparison:
                 {
                     self.income_measure: df.z,
                     "Overall weight": df.g_z_numerical,
-                    "Tax Base Elasticity": g1, #df.g_z_numerical - g1,
-                    "Nonconstant MTRs": g2, #df.g_z_numerical - g1 - g2,
+                    "Tax Base Elasticity": g1,  # df.g_z_numerical - g1,
+                    "Nonconstant MTRs": g2,  # df.g_z_numerical - g1 - g2,
                 }
             )
         fig = go.Figure()
         # add a line at y = 1
         fig.add_trace(
             go.Scatter(
-                x=[plot_df[self.income_measure].min(), plot_df[self.income_measure].max()],
+                x=[
+                    plot_df[self.income_measure].min(),
+                    plot_df[self.income_measure].max(),
+                ],
                 y=[1, 1],
                 mode="lines",
                 line=dict(color="black", width=1, dash="dash"),
@@ -357,7 +352,10 @@ class iot_comparison:
         # add a line at y=0
         fig.add_trace(
             go.Scatter(
-                x=[plot_df[self.income_measure].min(), plot_df[self.income_measure].max()],
+                x=[
+                    plot_df[self.income_measure].min(),
+                    plot_df[self.income_measure].max(),
+                ],
                 y=[0, 0],
                 mode="lines",
                 line=dict(color="black", width=1, dash="dash"),
