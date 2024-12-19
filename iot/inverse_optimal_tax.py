@@ -95,6 +95,7 @@ class IOT:
         dict_out = {
             "z": self.z,
             "f": self.f,
+            "F": self.F,
             "f_prime": self.f_prime,
             "mtr": self.mtr,
             "mtr_prime": self.mtr_prime,
@@ -336,7 +337,7 @@ class IOT:
             + ((self.eti * self.z * self.mtr_prime) / (1 - self.mtr) ** 2)
         )
         integral = np.trapz(g_z, self.z)
-        g_z = g_z / integral
+        # g_z = g_z / integral
         # use Lockwood and Weinzierl formula, which should be equivalent but using numerical differentiation
         bracket_term = (
             1
@@ -348,7 +349,7 @@ class IOT:
         d_dz_bracket = np.append(d_dz_bracket, d_dz_bracket[-1])
         g_z_numerical = -(1 / self.f) * d_dz_bracket
         integral = np.trapz(g_z_numerical, self.z)
-        g_z_numerical = g_z_numerical / integral
+        # g_z_numerical = g_z_numerical / integral
         return g_z, g_z_numerical
 
 
