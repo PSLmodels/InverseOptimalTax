@@ -154,11 +154,11 @@ class IOT:
             mtr_prime = np.gradient(mtr, edge_order=2)
         elif mtr_smoother == "HSV":
             # estimate the HSV function on mtrs via weighted least squares
-            X = data[income_measure].values
+            X = np.log(data[income_measure].values)
             X = np.column_stack((np.ones(len(X)), X))
-            w = data[weight_var].values
+            w = np.array(data[weight_var].values)
             w_sqrt = np.sqrt(w)
-            y = data["mtr"].values
+            y = np.log(1-data["mtr"].values)
             X_weighted = X * w_sqrt[:, np.newaxis]
             y_weighted = y * w_sqrt
             coef, _, _, _ = lstsq(X_weighted, y_weighted)
@@ -352,7 +352,7 @@ class IOT:
             + ((self.theta_z * self.eti * self.mtr) / (1 - self.mtr))
             + ((self.eti * self.z * self.mtr_prime) / (1 - self.mtr) ** 2)
         )
-        integral = np.trapz(g_z, self.z)
+        integral = np.trapz(g_z * self.f, self.z)
         g_z = g_z / integral
         # use Lockwood and Weinzierl formula, which should be equivalent but using numerical differentiation
         bracket_term = (
@@ -360,11 +360,11 @@ class IOT:
             - self.F
             - (self.mtr / (1 - self.mtr)) * self.eti * self.z * self.f
         )
-        # d_dz_bracket = np.gradient(bracket_term, edge_order=2)
-        d_dz_bracket = np.diff(bracket_term) / np.diff(self.z)
-        d_dz_bracket = np.append(d_dz_bracket, d_dz_bracket[-1])
+        d_dz_bracket = np.gradient(bracket_term, edge_order=2)
+        # d_dz_bracket = np.diff(bracket_term) / np.diff(self.z)
+        # d_dz_bracket = np.append(d_dz_bracket, d_dz_bracket[-1])
         g_z_numerical = -(1 / self.f) * d_dz_bracket
-        integral = np.trapz(g_z_numerical, self.z)
+        integral = np.trapz(g_z_numerical * self.f, self.z)
         g_z_numerical = g_z_numerical / integral
         return g_z, g_z_numerical
 
