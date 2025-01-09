@@ -29,7 +29,7 @@
   <link href="../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 <link href="../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
-    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=a3416100" />
     <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -330,17 +330,18 @@
                 <article class="bd-article">
                   
   <h1>Source code for iot.inverse_optimal_tax</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="kn">import</span> <span class="nn">scipy.stats</span> <span class="k">as</span> <span class="nn">st</span>
-<span class="kn">import</span> <span class="nn">scipy</span>
-<span class="kn">from</span> <span class="nn">statsmodels.nonparametric.kernel_regression</span> <span class="kn">import</span> <span class="n">KernelReg</span>
-<span class="kn">from</span> <span class="nn">scipy.interpolate</span> <span class="kn">import</span> <span class="n">UnivariateSpline</span>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">scipy.stats</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">st</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">scipy</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">statsmodels.nonparametric.kernel_regression</span><span class="w"> </span><span class="kn">import</span> <span class="n">KernelReg</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.interpolate</span><span class="w"> </span><span class="kn">import</span> <span class="n">UnivariateSpline</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.linalg</span><span class="w"> </span><span class="kn">import</span> <span class="n">lstsq</span>
 
 
 <div class="viewcode-block" id="IOT">
 <a class="viewcode-back" href="../../content/api/inverse_optimal_tax.html#iot.inverse_optimal_tax.IOT">[docs]</a>
-<span class="k">class</span> <span class="nc">IOT</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">IOT</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Constructor for the IOT class.</span>
 
@@ -368,7 +369,7 @@
 <span class="sd">        class instance: IOT</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">data</span><span class="p">,</span>
         <span class="n">income_measure</span><span class="o">=</span><span class="s2">&quot;e00200&quot;</span><span class="p">,</span>
@@ -417,7 +418,7 @@
 
 <div class="viewcode-block" id="IOT.df">
 <a class="viewcode-back" href="../../content/api/inverse_optimal_tax.html#iot.inverse_optimal_tax.IOT.df">[docs]</a>
-    <span class="k">def</span> <span class="nf">df</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">df</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return all vector attributes in a DataFrame format</span>
 
@@ -445,7 +446,7 @@
 
 <div class="viewcode-block" id="IOT.compute_mtr_dist">
 <a class="viewcode-back" href="../../content/api/inverse_optimal_tax.html#iot.inverse_optimal_tax.IOT.compute_mtr_dist">[docs]</a>
-    <span class="k">def</span> <span class="nf">compute_mtr_dist</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">compute_mtr_dist</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">weight_var</span><span class="p">,</span> <span class="n">income_measure</span><span class="p">,</span> <span class="n">mtr_smoother</span><span class="p">,</span> <span class="n">mtr_smooth_param</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -466,22 +467,23 @@
 <span class="sd">                * mtr_prime (array_like): rate of change in marginal tax rates</span>
 <span class="sd">                    for each income bin</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">bins</span> <span class="o">=</span> <span class="mi">1000</span>  <span class="c1"># number of equal-width bins</span>
-        <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">[</span><span class="s2">&quot;z_bin&quot;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">cut</span><span class="p">(</span>
-            <span class="n">data</span><span class="p">[</span><span class="n">income_measure</span><span class="p">],</span> <span class="n">bins</span><span class="p">,</span> <span class="n">include_lowest</span><span class="o">=</span><span class="kc">True</span>
-        <span class="p">)</span>
-        <span class="n">binned_data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
-            <span class="n">data</span><span class="p">[[</span><span class="s2">&quot;mtr&quot;</span><span class="p">,</span> <span class="n">income_measure</span><span class="p">,</span> <span class="s2">&quot;z_bin&quot;</span><span class="p">,</span> <span class="n">weight_var</span><span class="p">]]</span>
-            <span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s2">&quot;z_bin&quot;</span><span class="p">],</span> <span class="n">observed</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-            <span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">wm</span><span class="p">(</span><span class="n">x</span><span class="p">[[</span><span class="s2">&quot;mtr&quot;</span><span class="p">,</span> <span class="n">income_measure</span><span class="p">]],</span> <span class="n">x</span><span class="p">[</span><span class="n">weight_var</span><span class="p">]))</span>
-        <span class="p">)</span>
-        <span class="c1"># make column 0 into two columns</span>
-        <span class="n">binned_data</span><span class="p">[[</span><span class="s2">&quot;mtr&quot;</span><span class="p">,</span> <span class="n">income_measure</span><span class="p">]]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
-            <span class="n">binned_data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span> <span class="n">index</span><span class="o">=</span><span class="n">binned_data</span><span class="o">.</span><span class="n">index</span>
-        <span class="p">)</span>
-        <span class="n">binned_data</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="n">binned_data</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
         <span class="k">if</span> <span class="n">mtr_smoother</span> <span class="o">==</span> <span class="s2">&quot;kreg&quot;</span><span class="p">:</span>
+            <span class="n">bins</span> <span class="o">=</span> <span class="mi">1000</span>  <span class="c1"># number of equal-width bins</span>
+            <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">[</span><span class="s2">&quot;z_bin&quot;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">cut</span><span class="p">(</span>
+                <span class="n">data</span><span class="p">[</span><span class="n">income_measure</span><span class="p">],</span> <span class="n">bins</span><span class="p">,</span> <span class="n">include_lowest</span><span class="o">=</span><span class="kc">True</span>
+            <span class="p">)</span>
+            <span class="n">binned_data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+                <span class="n">data</span><span class="p">[[</span><span class="s2">&quot;mtr&quot;</span><span class="p">,</span> <span class="n">income_measure</span><span class="p">,</span> <span class="s2">&quot;z_bin&quot;</span><span class="p">,</span> <span class="n">weight_var</span><span class="p">]]</span>
+                <span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s2">&quot;z_bin&quot;</span><span class="p">],</span> <span class="n">observed</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                <span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">wm</span><span class="p">(</span><span class="n">x</span><span class="p">[[</span><span class="s2">&quot;mtr&quot;</span><span class="p">,</span> <span class="n">income_measure</span><span class="p">]],</span> <span class="n">x</span><span class="p">[</span><span class="n">weight_var</span><span class="p">]))</span>
+            <span class="p">)</span>
+            <span class="c1"># make column 0 into two columns</span>
+            <span class="n">binned_data</span><span class="p">[[</span><span class="s2">&quot;mtr&quot;</span><span class="p">,</span> <span class="n">income_measure</span><span class="p">]]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+                <span class="n">binned_data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span> <span class="n">index</span><span class="o">=</span><span class="n">binned_data</span><span class="o">.</span><span class="n">index</span>
+            <span class="p">)</span>
+            <span class="n">binned_data</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">binned_data</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="n">mtr_function</span> <span class="o">=</span> <span class="n">KernelReg</span><span class="p">(</span>
                 <span class="n">binned_data</span><span class="p">[</span><span class="s2">&quot;mtr&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">dropna</span><span class="p">(),</span>
                 <span class="n">binned_data</span><span class="p">[</span><span class="n">income_measure</span><span class="p">]</span><span class="o">.</span><span class="n">dropna</span><span class="p">(),</span>
@@ -489,17 +491,32 @@
                 <span class="n">reg_type</span><span class="o">=</span><span class="s2">&quot;ll&quot;</span><span class="p">,</span>
             <span class="p">)</span>
             <span class="n">mtr</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">mtr_function</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">z</span><span class="p">)</span>
+            <span class="n">mtr_prime</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">mtr</span><span class="p">,</span> <span class="n">edge_order</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">mtr_smoother</span> <span class="o">==</span> <span class="s2">&quot;HSV&quot;</span><span class="p">:</span>
+            <span class="c1"># estimate the HSV function on mtrs via weighted least squares</span>
+            <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">income_measure</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+            <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">X</span><span class="p">)),</span> <span class="n">X</span><span class="p">))</span>
+            <span class="n">w</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">weight_var</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+            <span class="n">w_sqrt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">w</span><span class="p">)</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;mtr&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+            <span class="n">X_weighted</span> <span class="o">=</span> <span class="n">X</span> <span class="o">*</span> <span class="n">w_sqrt</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
+            <span class="n">y_weighted</span> <span class="o">=</span> <span class="n">y</span> <span class="o">*</span> <span class="n">w_sqrt</span>
+            <span class="n">coef</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">lstsq</span><span class="p">(</span><span class="n">X_weighted</span><span class="p">,</span> <span class="n">y_weighted</span><span class="p">)</span>
+            <span class="n">tau</span> <span class="o">=</span> <span class="o">-</span><span class="n">coef</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">lambda_param</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">coef</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">tau</span><span class="p">)</span>
+            <span class="n">mtr</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">lambda_param</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">tau</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">z</span> <span class="o">**</span> <span class="p">(</span><span class="o">-</span><span class="n">tau</span><span class="p">)</span>
+            <span class="n">mtr_prime</span> <span class="o">=</span> <span class="n">lambda_param</span> <span class="o">*</span> <span class="n">tau</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">tau</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">z</span> <span class="o">**</span> <span class="p">(</span><span class="o">-</span><span class="n">tau</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Please enter a value mtr_smoother method&quot;</span><span class="p">)</span>
             <span class="k">assert</span> <span class="kc">False</span>
-        <span class="n">mtr_prime</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">mtr</span><span class="p">,</span> <span class="n">edge_order</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        
 
         <span class="k">return</span> <span class="n">mtr</span><span class="p">,</span> <span class="n">mtr_prime</span></div>
 
 
 <div class="viewcode-block" id="IOT.compute_income_dist">
 <a class="viewcode-back" href="../../content/api/inverse_optimal_tax.html#iot.inverse_optimal_tax.IOT.compute_income_dist">[docs]</a>
-    <span class="k">def</span> <span class="nf">compute_income_dist</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">compute_income_dist</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">income_measure</span><span class="p">,</span> <span class="n">weight_var</span><span class="p">,</span> <span class="n">dist_type</span><span class="p">,</span> <span class="n">kde_bw</span><span class="o">=</span><span class="kc">None</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -579,7 +596,7 @@
             <span class="n">f_prime</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">edge_order</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">dist_type</span> <span class="o">==</span> <span class="s2">&quot;Pln&quot;</span><span class="p">:</span>
 
-            <span class="k">def</span> <span class="nf">pln_pdf</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">alpha</span><span class="p">):</span>
+            <span class="k">def</span><span class="w"> </span><span class="nf">pln_pdf</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">alpha</span><span class="p">):</span>
                 <span class="n">x1</span> <span class="o">=</span> <span class="n">alpha</span> <span class="o">*</span> <span class="n">sigma</span> <span class="o">-</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="o">-</span> <span class="n">mu</span><span class="p">)</span> <span class="o">/</span> <span class="n">sigma</span>
                 <span class="n">phi</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">norm</span><span class="o">.</span><span class="n">pdf</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="o">-</span> <span class="n">mu</span><span class="p">)</span> <span class="o">/</span> <span class="n">sigma</span><span class="p">)</span>
                 <span class="n">R</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">st</span><span class="o">.</span><span class="n">norm</span><span class="o">.</span><span class="n">cdf</span><span class="p">(</span><span class="n">x1</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span><span class="n">st</span><span class="o">.</span><span class="n">norm</span><span class="o">.</span><span class="n">pdf</span><span class="p">(</span><span class="n">x1</span><span class="p">)</span> <span class="o">+</span> <span class="mf">1e-15</span><span class="p">)</span>
@@ -587,7 +604,7 @@
                 <span class="n">pdf</span> <span class="o">=</span> <span class="n">alpha</span> <span class="o">/</span> <span class="n">y</span> <span class="o">*</span> <span class="n">phi</span> <span class="o">*</span> <span class="n">R</span>
                 <span class="k">return</span> <span class="n">pdf</span>
 
-            <span class="k">def</span> <span class="nf">neg_weighted_log_likelihood</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">weights</span><span class="p">):</span>
+            <span class="k">def</span><span class="w"> </span><span class="nf">neg_weighted_log_likelihood</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">weights</span><span class="p">):</span>
                 <span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">alpha</span> <span class="o">=</span> <span class="n">params</span>
                 <span class="n">likelihood</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span>
                     <span class="n">weights</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">pln_pdf</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">alpha</span><span class="p">)</span> <span class="o">+</span> <span class="mf">1e-15</span><span class="p">)</span>
@@ -595,7 +612,7 @@
                 <span class="c1"># 1e-15 to avoid log(0)</span>
                 <span class="k">return</span> <span class="o">-</span><span class="n">likelihood</span>
 
-            <span class="k">def</span> <span class="nf">fit_pln</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">weights</span><span class="p">,</span> <span class="n">initial_guess</span><span class="p">):</span>
+            <span class="k">def</span><span class="w"> </span><span class="nf">fit_pln</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">weights</span><span class="p">,</span> <span class="n">initial_guess</span><span class="p">):</span>
                 <span class="n">bounds</span> <span class="o">=</span> <span class="p">[(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="p">(</span><span class="mf">0.01</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="p">(</span><span class="mf">0.01</span><span class="p">,</span> <span class="kc">None</span><span class="p">)]</span>
                 <span class="n">result</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">optimize</span><span class="o">.</span><span class="n">minimize</span><span class="p">(</span>
                     <span class="n">neg_weighted_log_likelihood</span><span class="p">,</span>
@@ -623,7 +640,7 @@
                 <span class="n">data</span><span class="p">[</span><span class="n">income_measure</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="n">weight_var</span><span class="p">],</span> <span class="n">initial_guess</span>
             <span class="p">)</span>
 
-            <span class="k">def</span> <span class="nf">pln_cdf</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">alpha</span><span class="p">):</span>
+            <span class="k">def</span><span class="w"> </span><span class="nf">pln_cdf</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">alpha</span><span class="p">):</span>
                 <span class="n">x1</span> <span class="o">=</span> <span class="n">alpha</span> <span class="o">*</span> <span class="n">sigma</span> <span class="o">-</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="o">-</span> <span class="n">mu</span><span class="p">)</span> <span class="o">/</span> <span class="n">sigma</span>
                 <span class="n">R</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">st</span><span class="o">.</span><span class="n">norm</span><span class="o">.</span><span class="n">cdf</span><span class="p">(</span><span class="n">x1</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span><span class="n">st</span><span class="o">.</span><span class="n">norm</span><span class="o">.</span><span class="n">pdf</span><span class="p">(</span><span class="n">x1</span><span class="p">)</span> <span class="o">+</span> <span class="mf">1e-12</span><span class="p">)</span>
                 <span class="n">CDF</span> <span class="o">=</span> <span class="p">(</span>
@@ -632,7 +649,7 @@
                 <span class="p">)</span>
                 <span class="k">return</span> <span class="n">CDF</span>
 
-            <span class="k">def</span> <span class="nf">pln_dpdf</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">alpha</span><span class="p">):</span>
+            <span class="k">def</span><span class="w"> </span><span class="nf">pln_dpdf</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">alpha</span><span class="p">):</span>
                 <span class="n">x</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="o">-</span> <span class="n">mu</span><span class="p">)</span> <span class="o">/</span> <span class="n">sigma</span>
                 <span class="n">R</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">st</span><span class="o">.</span><span class="n">norm</span><span class="o">.</span><span class="n">cdf</span><span class="p">(</span><span class="n">alpha</span> <span class="o">*</span> <span class="n">sigma</span> <span class="o">-</span> <span class="n">x</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span>
                     <span class="n">st</span><span class="o">.</span><span class="n">norm</span><span class="o">.</span><span class="n">pdf</span><span class="p">(</span><span class="n">alpha</span> <span class="o">*</span> <span class="n">sigma</span> <span class="o">-</span> <span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="mf">1e-15</span>
@@ -658,7 +675,7 @@
 
 <div class="viewcode-block" id="IOT.sw_weights">
 <a class="viewcode-back" href="../../content/api/inverse_optimal_tax.html#iot.inverse_optimal_tax.IOT.sw_weights">[docs]</a>
-    <span class="k">def</span> <span class="nf">sw_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sw_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns the social welfare weights for a given tax policy.</span>
 
@@ -681,26 +698,28 @@
             <span class="o">+</span> <span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">theta_z</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">eti</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">mtr</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">mtr</span><span class="p">))</span>
             <span class="o">+</span> <span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">eti</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">z</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">mtr_prime</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">mtr</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
         <span class="p">)</span>
-        <span class="n">integral</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">trapz</span><span class="p">(</span><span class="n">g_z</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">z</span><span class="p">)</span>
-        <span class="c1"># g_z = g_z / integral</span>
+        <span class="n">integral</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">trapz</span><span class="p">(</span><span class="n">g_z</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">f</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">z</span><span class="p">)</span>
+        <span class="n">g_z</span> <span class="o">=</span> <span class="n">g_z</span> <span class="o">/</span> <span class="n">integral</span>
+
         <span class="c1"># use Lockwood and Weinzierl formula, which should be equivalent but using numerical differentiation</span>
         <span class="n">bracket_term</span> <span class="o">=</span> <span class="p">(</span>
             <span class="mi">1</span>
             <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">F</span>
             <span class="o">-</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mtr</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">mtr</span><span class="p">))</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">eti</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">z</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">f</span>
         <span class="p">)</span>
-        <span class="c1"># d_dz_bracket = np.gradient(bracket_term, edge_order=2)</span>
-        <span class="n">d_dz_bracket</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">bracket_term</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">z</span><span class="p">)</span>
-        <span class="n">d_dz_bracket</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">d_dz_bracket</span><span class="p">,</span> <span class="n">d_dz_bracket</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">d_dz_bracket</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">bracket_term</span><span class="p">,</span> <span class="n">edge_order</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        <span class="c1"># d_dz_bracket = np.diff(bracket_term) / np.diff(self.z)</span>
+        <span class="c1"># d_dz_bracket = np.append(d_dz_bracket, d_dz_bracket[-1])</span>
         <span class="n">g_z_numerical</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">f</span><span class="p">)</span> <span class="o">*</span> <span class="n">d_dz_bracket</span>
-        <span class="n">integral</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">trapz</span><span class="p">(</span><span class="n">g_z_numerical</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">z</span><span class="p">)</span>
-        <span class="c1"># g_z_numerical = g_z_numerical / integral</span>
+        <span class="n">integral</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">trapz</span><span class="p">(</span><span class="n">g_z_numerical</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">f</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">z</span><span class="p">)</span>
+        <span class="n">g_z_numerical</span> <span class="o">=</span> <span class="n">g_z_numerical</span> <span class="o">/</span> <span class="n">integral</span>
+        
         <span class="k">return</span> <span class="n">g_z</span><span class="p">,</span> <span class="n">g_z_numerical</span></div>
 </div>
 
 
 
-<span class="k">def</span> <span class="nf">find_eti</span><span class="p">(</span><span class="n">iot1</span><span class="p">,</span> <span class="n">iot2</span><span class="p">,</span> <span class="n">g_z_type</span><span class="o">=</span><span class="s2">&quot;g_z&quot;</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">find_eti</span><span class="p">(</span><span class="n">iot1</span><span class="p">,</span> <span class="n">iot2</span><span class="p">,</span> <span class="n">g_z_type</span><span class="o">=</span><span class="s2">&quot;g_z&quot;</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This function solves for the ETI that would result in the</span>
 <span class="sd">    policy represented via MTRs in iot2 be consistent with the</span>
@@ -737,7 +756,7 @@
     <span class="k">return</span> <span class="n">eti_beliefs_lw</span><span class="p">,</span> <span class="n">eti_beliefs_jjz</span>
 
 
-<span class="k">def</span> <span class="nf">wm</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">weight</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">wm</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">weight</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Weighted mean function that allows for zero division</span>
 
