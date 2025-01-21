@@ -3,7 +3,7 @@ channels:
 - conda-forge
 dependencies:
 - python
-- "taxcalc>=3.2.0"
+- "taxcalc>=4.0.0"
 - pandas
 - numpy
 - scipy
