@@ -150,27 +150,40 @@ class IOT:
                 binned_data[income_measure].dropna(),
                 var_type="c",
                 reg_type="ll",
+                bw=[mtr_smooth_param * 40_000],
             )
             mtr, _ = mtr_function.fit(self.z)
             mtr_prime = np.gradient(mtr, self.z, edge_order=2)
         elif mtr_smoother == "HSV":
             # estimate the HSV function on mtrs via weighted least squares
+            # DATA CLEANING
+            # drop rows with missing or inf mtr
+            data = data[~data["mtr"].isna()]
+            data = data[~data["mtr"].isin([np.inf, -np.inf])]
+            # drop if MTR > 100%
+            data = data[data["mtr"] < 1]
+            # drop rows with missing, inf, or zero income
+            data = data[data[income_measure] > 0]
+            # drop rows with missing, inf or negative weights
+            data = data[~data[weight_var].isna()]
+            data = data[~data[weight_var].isin([np.inf, -np.inf])]
+            data = data[data[weight_var] > 0]
+            # ESTIMATION
             X = np.log(data[income_measure].values)
             X = np.column_stack((np.ones(len(X)), X))
             w = np.array(data[weight_var].values)
             w_sqrt = np.sqrt(w)
-            y = np.log(1-data["mtr"].values)
+            y = np.log(1 - data["mtr"].values)
             X_weighted = X * w_sqrt[:, np.newaxis]
             y_weighted = y * w_sqrt
             coef, _, _, _ = lstsq(X_weighted, y_weighted)
             tau = -coef[1]
-            lambda_param = np.exp(coef[0]) / (1-tau)
-            mtr = 1 - lambda_param * (1-tau) * self.z ** (-tau)
-            mtr_prime = lambda_param * tau * (1-tau) * self.z ** (-tau - 1)
+            lambda_param = np.exp(coef[0]) / (1 - tau)
+            mtr = 1 - lambda_param * (1 - tau) * self.z ** (-tau)
+            mtr_prime = lambda_param * tau * (1 - tau) * self.z ** (-tau - 1)
         else:
             print("Please enter a value mtr_smoother method")
             assert False
-        
 
         return mtr, mtr_prime
 
@@ -368,7 +381,7 @@ class IOT:
         g_z_numerical = -(1 / self.f) * d_dz_bracket
         integral = np.trapz(g_z_numerical * self.f, self.z)
         g_z_numerical = g_z_numerical / integral
-        
+
         return g_z, g_z_numerical
 
 
