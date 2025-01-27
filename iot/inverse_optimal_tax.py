@@ -44,7 +44,7 @@ class IOT:
         dist_type="log_normal",
         kde_bw=None,
         mtr_smoother="kreg",
-        mtr_smooth_param=3,
+        mtr_smooth_param=1000,
     ):
         # keep the original data intact
         self.data_original = data.copy()
@@ -130,7 +130,7 @@ class IOT:
         """
 
         if mtr_smoother == "kreg":
-            bins = 1000  # number of equal-width bins
+            bins = mtr_smooth_param  # number of equal-width bins
             data.loc[:, ["z_bin"]] = pd.cut(
                 data[income_measure], bins, include_lowest=True
             )
@@ -153,7 +153,7 @@ class IOT:
                 bw=[mtr_smooth_param * 40_000],
             )
             mtr, _ = mtr_function.fit(self.z)
-            mtr_prime = np.gradient(mtr, edge_order=2)
+            mtr_prime = np.gradient(mtr, self.z, edge_order=2)
         elif mtr_smoother == "HSV":
             # estimate the HSV function on mtrs via weighted least squares
             # DATA CLEANING
