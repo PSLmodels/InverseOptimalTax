@@ -62,7 +62,8 @@ class iot_comparison:
         dist_type="log_normal",
         kde_bw=None,
         mtr_smoother="kreg",
-        mtr_smooth_param=4,
+        mtr_smooth_param=1000,
+        kreg_bw=[120_000]
     ):
         self.income_measure = income_measure
         self.weight_var = weight_var
@@ -111,6 +112,7 @@ class iot_comparison:
                     kde_bw=kde_bw,
                     mtr_smoother=mtr_smoother,
                     mtr_smooth_param=mtr_smooth_param,
+                    kreg_bw=kreg_bw,
                 )
             )
 

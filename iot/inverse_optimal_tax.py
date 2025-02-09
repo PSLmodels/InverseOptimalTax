@@ -45,6 +45,7 @@ class IOT:
         kde_bw=None,
         mtr_smoother="kreg",
         mtr_smooth_param=1000,
+        kreg_bw=[120_000],
     ):
         # keep the original data intact
         self.data_original = data.copy()
@@ -75,7 +76,7 @@ class IOT:
             self.eti = eti_spl(self.z)
         # compute marginal tax rate schedule
         self.mtr, self.mtr_prime = self.compute_mtr_dist(
-            data, weight_var, income_measure, mtr_smoother, mtr_smooth_param
+            data, weight_var, income_measure, mtr_smoother, mtr_smooth_param, kreg_bw
         )
         # compute theta_z, the elasticity of the tax base
         self.theta_z = 1 + ((self.z * self.f_prime) / self.f)
@@ -108,7 +109,7 @@ class IOT:
         return df
 
     def compute_mtr_dist(
-        self, data, weight_var, income_measure, mtr_smoother, mtr_smooth_param
+        self, data, weight_var, income_measure, mtr_smoother, mtr_smooth_param, kreg_bw
     ):
         """
         Compute marginal tax rates over the income distribution and
@@ -150,7 +151,7 @@ class IOT:
                 binned_data[income_measure].dropna(),
                 var_type="c",
                 reg_type="ll",
-                bw=[mtr_smooth_param * 40_000],
+                bw=kreg_bw,
             )
             mtr, _ = mtr_function.fit(self.z)
             mtr_prime = np.gradient(mtr, self.z, edge_order=2)
