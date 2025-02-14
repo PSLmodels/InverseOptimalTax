@@ -76,7 +76,12 @@ class IOT:
             self.eti = eti_spl(self.z)
         # compute marginal tax rate schedule
         self.mtr, self.mtr_prime = self.compute_mtr_dist(
-            data, weight_var, income_measure, mtr_smoother, mtr_smooth_param, kreg_bw
+            data,
+            weight_var,
+            income_measure,
+            mtr_smoother,
+            mtr_smooth_param,
+            kreg_bw,
         )
         # compute theta_z, the elasticity of the tax base
         self.theta_z = 1 + ((self.z * self.f_prime) / self.f)
@@ -109,7 +114,13 @@ class IOT:
         return df
 
     def compute_mtr_dist(
-        self, data, weight_var, income_measure, mtr_smoother, mtr_smooth_param, kreg_bw
+        self,
+        data,
+        weight_var,
+        income_measure,
+        mtr_smoother,
+        mtr_smooth_param,
+        kreg_bw,
     ):
         """
         Compute marginal tax rates over the income distribution and

@@ -63,7 +63,7 @@ class iot_comparison:
         kde_bw=None,
         mtr_smoother="kreg",
         mtr_smooth_param=1000,
-        kreg_bw=[120_000]
+        kreg_bw=[120_000],
     ):
         self.income_measure = income_measure
         self.weight_var = weight_var
@@ -262,35 +262,26 @@ class iot_comparison:
                 showlegend=False,
             )
         )
-        # fig.add_trace(
-        #     go.Scatter(
-        #         x=plot_df[self.income_measure],
-        #         y=plot_df["Nonconstant MTRs"],
-        #         fill="tonexty",  # fill area between trace1 and trace2
-        #         # fill="tozeroy",
-        #         mode="lines",
-        #         name="Nonconstant MTRs",
-        #     )
-        # )
         fig.add_trace(
             go.Scatter(
                 x=plot_df[self.income_measure],
-                y=plot_df["Tax Base Elasticity"],
-                fill="tonexty",  # fill area between trace0 and trace1
+                y=plot_df["Nonconstant MTRs"],
+                fill="tonexty",  # fill area from prior trace to this one
+                # fill="tozeroy",
                 mode="lines",
-                name="Tax Base Elasticity",
+                name="Nonconstant MTRs",
             )
         )
         fig.add_trace(
             go.Scatter(
                 x=plot_df[self.income_measure],
                 y=plot_df["Overall weight"],
-                fill="tonexty",
+                fill="tonexty",  # fill area between trace0 and trace1
                 mode="lines",
-                name="Nonconstant MTRs",
+                name="Tax Base Elasticity",
             )
         )
-        # add a line at y=0
+        # Add black line for overall weight
         fig.add_trace(
             go.Scatter(
                 x=plot_df[self.income_measure],
@@ -301,18 +292,18 @@ class iot_comparison:
                 showlegend=False,
             )
         )
-        # add a line at y=0
-        fig.add_trace(
-            go.Scatter(
-                x=[
-                    plot_df[self.income_measure].min(),
-                    plot_df[self.income_measure].max(),
-                ],
-                y=[0, 0],
-                mode="lines",
-                line=dict(color="black", width=1, dash="dash"),
-            )
-        )
+        # # add a line at y=0
+        # fig.add_trace(
+        #     go.Scatter(
+        #         x=[
+        #             plot_df[self.income_measure].min(),
+        #             plot_df[self.income_measure].max(),
+        #         ],
+        #         y=[0, 0],
+        #         mode="lines",
+        #         line=dict(color="black", width=1, dash="dash"),
+        #     )
+        # )
         fig.update_layout(
             xaxis_title=OUTPUT_LABELS[self.income_measure],
             yaxis_title=r"$g_z$",
