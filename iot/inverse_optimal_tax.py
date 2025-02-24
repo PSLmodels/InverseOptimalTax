@@ -30,6 +30,8 @@ class IOT:
             parametric, if None, then non-parametric bin weights
         mtr_smoother (None or str): method used to smooth our mtr
             function, if None, then use bin average mtrs
+        mtr_smooth_param (scalar): parameter for mtr_smoother
+        kreg_bw (array_like): bandwidth for kernel regression
 
     Returns:
         class instance: IOT
@@ -122,6 +124,8 @@ class IOT:
             weight_var (str): name of weight measure from data to use
             mtr_smoother (None or str): method used to smooth our mtr
             function, if None, then use bin average mtrs
+            mtr_smooth_param (scalar): parameter for mtr_smoother
+            kreg_bw (array_like): bandwidth for kernel regression
 
         Returns:
             tuple:
@@ -207,6 +211,7 @@ class IOT:
             weight_var (str): name of weight measure from data to use
             dist_type (None or str): type of distribution to use if
                 parametric, if None, then non-parametric bin weights
+            kde_bw (array_like): bandwidth for kernel regression
 
         Returns:
             tuple:
