@@ -386,41 +386,38 @@ class IOT:
         return g_z, g_z_numerical
 
 
-def find_eti(iot1, iot2, g_z_type="g_z"):
+def find_eti(self, g_z = None, eti_0 = 0.25):
     """
     This function solves for the ETI that would result in the
-    policy represented via MTRs in iot2 be consistent with the
-    social welfare function inferred from the policies of iot1.
+    policy represented via MTRs being consistent with the
+    social welfare function supplied. It solves a first order
+    ordinary differential equation.
 
     .. math::
-            \varepsilon_{z} = \frac{(1-T'(z))}{T'(z)}\frac{(1-F(z))}{zf(z)}\int_{z}^{\infty}\frac{1-g_{\tilde{z}}{1-F(y)}dF(\tilde{z})
+            \varepsilon'(z)\left[\frac{zT'(z)}{1-T'(z)}\right] + \varepsilon(z)\left[\theta_z  \frac{T'(z)}{1-T'(z)} +\frac{zT''(z)}{(1-T'(z))^2}\right]+ (1-g(z))
 
     Args:
-        iot1 (IOT): IOT class instance representing baseline policy
-        iot2 (IOT): IOT class instance representing reform policy
-        g_z_type (str): type of social welfare function to use
-            Options are:
-            * 'g_z' for the analytical formula
-            * 'g_z_numerical' for the numerical approximation
+        g_z (None or array_like): vector of social welfare weights
+        eti_0 (scalar): guess for ETI at z=0
 
     Returns:
         eti_beliefs (array-like): vector of ETI beliefs over z
     """
-    if g_z_type == "g_z":
-        g_z = iot1.g_z
-    else:
-        g_z = iot1.g_z_numerical
-    # The equation below is a simplication of the above to make the integration easier
-    eti_beliefs_lw = ((1 - iot2.mtr) / (iot2.z * iot2.f * iot2.mtr)) * (
-        1 - iot2.F - (g_z.sum() - np.cumsum(g_z))
-    )
-    # derivation from JJZ analytical solution that doesn't involved integration
-    eti_beliefs_jjz = (g_z - 1) / (
-        (iot2.theta_z * (iot2.mtr / (1 - iot2.mtr)))
-        + (iot2.z * (iot2.mtr_prime / (1 - iot2.mtr) ** 2))
-    )
+    
+    if g_z is None:
+        g_z = self.g_z
+    
+    # we solve an ODE of the form f'(z) + P(z)f(z) = Q(z)
+    P_z = 1/self.z + self.f_prime/self.f + self.mtr_prime/(self.mtr * (1-self.mtr))
+    # integrating factor for ODE: mu(z) * f'(z) + mu(z) * P(z) * f(z) = mu(z) * Q(z)
+    mu_z = np.exp(np.cumsum(P_z))
+    Q_z = (g_z - 1) * (1 - self.mtr) / (self.mtr * self.z)
+    # integrate Q(z) * mu(z), as we integrate both sides of the ODE
+    int_mu_Q = np.cumsum(mu_z * Q_z)
 
-    return eti_beliefs_lw, eti_beliefs_jjz
+    eti_beliefs = (eti_0 + int_mu_Q) / mu_z
+
+    return eti_beliefs
 
 
 def wm(value, weight):
