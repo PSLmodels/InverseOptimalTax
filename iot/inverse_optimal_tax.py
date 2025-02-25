@@ -30,6 +30,8 @@ class IOT:
             parametric, if None, then non-parametric bin weights
         mtr_smoother (None or str): method used to smooth our mtr
             function, if None, then use bin average mtrs
+        mtr_smooth_param (scalar): parameter for mtr_smoother
+        kreg_bw (array_like): bandwidth for kernel regression
 
     Returns:
         class instance: IOT
@@ -122,6 +124,8 @@ class IOT:
             weight_var (str): name of weight measure from data to use
             mtr_smoother (None or str): method used to smooth our mtr
             function, if None, then use bin average mtrs
+            mtr_smooth_param (scalar): parameter for mtr_smoother
+            kreg_bw (array_like): bandwidth for kernel regression
 
         Returns:
             tuple:
@@ -207,6 +211,7 @@ class IOT:
             weight_var (str): name of weight measure from data to use
             dist_type (None or str): type of distribution to use if
                 parametric, if None, then non-parametric bin weights
+            kde_bw (array_like): bandwidth for kernel regression
 
         Returns:
             tuple:
@@ -367,7 +372,7 @@ class IOT:
             + ((self.theta_z * self.eti * self.mtr) / (1 - self.mtr))
             + ((self.eti * self.z * self.mtr_prime) / (1 - self.mtr) ** 2)
         )
-        integral = np.trapz(g_z * self.f, self.z)
+        integral = np.trapz(g_z * self.f, self.z) # renormalize to integrate to 1
         g_z = g_z / integral
 
         # use Lockwood and Weinzierl formula, which should be equivalent but using numerical differentiation
@@ -386,41 +391,39 @@ class IOT:
         return g_z, g_z_numerical
 
 
-def find_eti(iot1, iot2, g_z_type="g_z"):
+def find_eti(iot, g_z = None, eti_0 = 0.25):
     """
     This function solves for the ETI that would result in the
-    policy represented via MTRs in iot2 be consistent with the
-    social welfare function inferred from the policies of iot1.
+    policy represented via MTRs in IOT being consistent with the
+    social welfare function supplied. It solves a first order
+    ordinary differential equation.
 
     .. math::
-            \varepsilon_{z} = \frac{(1-T'(z))}{T'(z)}\frac{(1-F(z))}{zf(z)}\int_{z}^{\infty}\frac{1-g_{\tilde{z}}{1-F(y)}dF(\tilde{z})
+            \varepsilon'(z)\left[\frac{zT'(z)}{1-T'(z)}\right] + \varepsilon(z)\left[\theta_z  \frac{T'(z)}{1-T'(z)} +\frac{zT''(z)}{(1-T'(z))^2}\right]+ (1-g(z))
 
     Args:
-        iot1 (IOT): IOT class instance representing baseline policy
-        iot2 (IOT): IOT class instance representing reform policy
-        g_z_type (str): type of social welfare function to use
-            Options are:
-            * 'g_z' for the analytical formula
-            * 'g_z_numerical' for the numerical approximation
+        iot (IOT): instance of the I
+        g_z (None or array_like): vector of social welfare weights
+        eti_0 (scalar): guess for ETI at z=0
 
     Returns:
         eti_beliefs (array-like): vector of ETI beliefs over z
     """
-    if g_z_type == "g_z":
-        g_z = iot1.g_z
-    else:
-        g_z = iot1.g_z_numerical
-    # The equation below is a simplication of the above to make the integration easier
-    eti_beliefs_lw = ((1 - iot2.mtr) / (iot2.z * iot2.f * iot2.mtr)) * (
-        1 - iot2.F - (g_z.sum() - np.cumsum(g_z))
-    )
-    # derivation from JJZ analytical solution that doesn't involved integration
-    eti_beliefs_jjz = (g_z - 1) / (
-        (iot2.theta_z * (iot2.mtr / (1 - iot2.mtr)))
-        + (iot2.z * (iot2.mtr_prime / (1 - iot2.mtr) ** 2))
-    )
+    
+    if g_z is None:
+        g_z = iot.g_z
+    
+    # we solve an ODE of the form f'(z) + P(z)f(z) = Q(z)
+    P_z = 1/iot.z + iot.f_prime/iot.f + iot.mtr_prime/(iot.mtr * (1-iot.mtr))
+    # integrating factor for ODE: mu(z) * f'(z) + mu(z) * P(z) * f(z) = mu(z) * Q(z)
+    mu_z = np.exp(np.cumsum(P_z))
+    Q_z = (g_z - 1) * (1 - iot.mtr) / (iot.mtr * iot.z)
+    # integrate Q(z) * mu(z), as we integrate both sides of the ODE
+    int_mu_Q = np.cumsum(mu_z * Q_z)
 
-    return eti_beliefs_lw, eti_beliefs_jjz
+    eti_beliefs = (eti_0 + int_mu_Q) / mu_z
+
+    return eti_beliefs
 
 
 def wm(value, weight):
