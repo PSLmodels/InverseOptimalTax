@@ -15,33 +15,30 @@
     document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
     document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
   </script>
-  <!--
-    this give us a css class that will be invisible only if js is disabled
-  -->
-  <noscript>
-    <style>
-      .pst-js-only { display: none !important; }
-
-    </style>
-  </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
-<link href="../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+  <link href="../../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
 
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
-    <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=a3416100" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=eba8b062" />
     <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
   
-  <!-- So that users can add custom icons -->
-  <script src="../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
-<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
     <script src="../../_static/documentation_options.js?v=9eb32ce0"></script>
     <script src="../../_static/doctools.js?v=9a2dae69"></script>
@@ -64,7 +61,6 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="" />
   </head>
   
   
@@ -80,8 +76,19 @@
     <i class="fa-solid fa-arrow-up"></i>Back to top</button>
 
   
-  <dialog id="pst-search-dialog">
-    
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
 <form class="bd-search d-flex align-items-center"
       action="../../search.html"
       method="get">
@@ -89,6 +96,7 @@
   <input type="search"
          class="form-control"
          name="q"
+         id="search-input"
          placeholder="Search this book..."
          aria-label="Search this book..."
          autocomplete="off"
@@ -96,8 +104,8 @@
          autocapitalize="off"
          spellcheck="false"/>
   <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
-</form>
-  </dialog>
+</form></div>
+  </div>
 
   <div class="pst-async-banner-revealer d-none">
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
@@ -115,8 +123,7 @@
       
         
       
-      <dialog id="pst-primary-sidebar-modal"></dialog>
-      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+      <div class="bd-sidebar-primary bd-sidebar">
         
 
   
@@ -146,11 +153,15 @@
 </a></div>
         <div class="sidebar-primary-item">
 
-<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
- <i class="fa-solid fa-magnifying-glass"></i>
- <span class="search-button__default-text">Search</span>
- <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
-</button></div>
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
         <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item navbar-nav active">
         
@@ -191,14 +202,9 @@
   
   
   <div class="sidebar-primary-items__end sidebar-primary__section">
-      <div class="sidebar-primary-item">
-<div id="ethical-ad-placement"
-      class="flat"
-      data-ea-publisher="readthedocs"
-      data-ea-type="readthedocs-sidebar"
-      data-ea-manual="true">
-</div></div>
   </div>
+  
+  <div id="rtd-footer-container"></div>
 
 
       </div>
@@ -294,16 +300,24 @@
 
 
 
-<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
-  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
-  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
-  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
-</button>
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
 
 
-<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
     <i class="fa-solid fa-magnifying-glass fa-lg"></i>
-</button>
+  </button>
+`);
+</script>
 
 </div></div>
       
@@ -364,6 +378,8 @@
 <span class="sd">            parametric, if None, then non-parametric bin weights</span>
 <span class="sd">        mtr_smoother (None or str): method used to smooth our mtr</span>
 <span class="sd">            function, if None, then use bin average mtrs</span>
+<span class="sd">        mtr_smooth_param (scalar): parameter for mtr_smoother</span>
+<span class="sd">        kreg_bw (array_like): bandwidth for kernel regression</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        class instance: IOT</span>
@@ -461,6 +477,8 @@
 <span class="sd">            weight_var (str): name of weight measure from data to use</span>
 <span class="sd">            mtr_smoother (None or str): method used to smooth our mtr</span>
 <span class="sd">            function, if None, then use bin average mtrs</span>
+<span class="sd">            mtr_smooth_param (scalar): parameter for mtr_smoother</span>
+<span class="sd">            kreg_bw (array_like): bandwidth for kernel regression</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            tuple:</span>
@@ -549,6 +567,7 @@
 <span class="sd">            weight_var (str): name of weight measure from data to use</span>
 <span class="sd">            dist_type (None or str): type of distribution to use if</span>
 <span class="sd">                parametric, if None, then non-parametric bin weights</span>
+<span class="sd">            kde_bw (array_like): bandwidth for kernel regression</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            tuple:</span>
@@ -712,7 +731,7 @@
             <span class="o">+</span> <span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">theta_z</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">eti</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">mtr</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">mtr</span><span class="p">))</span>
             <span class="o">+</span> <span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">eti</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">z</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">mtr_prime</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">mtr</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
         <span class="p">)</span>
-        <span class="n">integral</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">trapz</span><span class="p">(</span><span class="n">g_z</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">f</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">z</span><span class="p">)</span>
+        <span class="n">integral</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">trapz</span><span class="p">(</span><span class="n">g_z</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">f</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">z</span><span class="p">)</span> <span class="c1"># renormalize to integrate to 1</span>
         <span class="n">g_z</span> <span class="o">=</span> <span class="n">g_z</span> <span class="o">/</span> <span class="n">integral</span>
 
         <span class="c1"># use Lockwood and Weinzierl formula, which should be equivalent but using numerical differentiation</span>
@@ -733,41 +752,39 @@
 
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">find_eti</span><span class="p">(</span><span class="n">iot1</span><span class="p">,</span> <span class="n">iot2</span><span class="p">,</span> <span class="n">g_z_type</span><span class="o">=</span><span class="s2">&quot;g_z&quot;</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">find_eti</span><span class="p">(</span><span class="n">iot</span><span class="p">,</span> <span class="n">g_z</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">eti_0</span> <span class="o">=</span> <span class="mf">0.25</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This function solves for the ETI that would result in the</span>
-<span class="sd">    policy represented via MTRs in iot2 be consistent with the</span>
-<span class="sd">    social welfare function inferred from the policies of iot1.</span>
+<span class="sd">    policy represented via MTRs in IOT being consistent with the</span>
+<span class="sd">    social welfare function supplied. It solves a first order</span>
+<span class="sd">    ordinary differential equation.</span>
 
 <span class="sd">    .. math::</span>
-<span class="sd">            \varepsilon_{z} = \frac{(1-T&#39;(z))}{T&#39;(z)}\frac{(1-F(z))}{zf(z)}\int_{z}^{\infty}\frac{1-g_{\tilde{z}}{1-F(y)}dF(\tilde{z})</span>
+<span class="sd">            \varepsilon&#39;(z)\left[\frac{zT&#39;(z)}{1-T&#39;(z)}\right] + \varepsilon(z)\left[\theta_z  \frac{T&#39;(z)}{1-T&#39;(z)} +\frac{zT&#39;&#39;(z)}{(1-T&#39;(z))^2}\right]+ (1-g(z))</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        iot1 (IOT): IOT class instance representing baseline policy</span>
-<span class="sd">        iot2 (IOT): IOT class instance representing reform policy</span>
-<span class="sd">        g_z_type (str): type of social welfare function to use</span>
-<span class="sd">            Options are:</span>
-<span class="sd">            * &#39;g_z&#39; for the analytical formula</span>
-<span class="sd">            * &#39;g_z_numerical&#39; for the numerical approximation</span>
+<span class="sd">        iot (IOT): instance of the I</span>
+<span class="sd">        g_z (None or array_like): vector of social welfare weights</span>
+<span class="sd">        eti_0 (scalar): guess for ETI at z=0</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        eti_beliefs (array-like): vector of ETI beliefs over z</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">g_z_type</span> <span class="o">==</span> <span class="s2">&quot;g_z&quot;</span><span class="p">:</span>
-        <span class="n">g_z</span> <span class="o">=</span> <span class="n">iot1</span><span class="o">.</span><span class="n">g_z</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">g_z</span> <span class="o">=</span> <span class="n">iot1</span><span class="o">.</span><span class="n">g_z_numerical</span>
-    <span class="c1"># The equation below is a simplication of the above to make the integration easier</span>
-    <span class="n">eti_beliefs_lw</span> <span class="o">=</span> <span class="p">((</span><span class="mi">1</span> <span class="o">-</span> <span class="n">iot2</span><span class="o">.</span><span class="n">mtr</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">iot2</span><span class="o">.</span><span class="n">z</span> <span class="o">*</span> <span class="n">iot2</span><span class="o">.</span><span class="n">f</span> <span class="o">*</span> <span class="n">iot2</span><span class="o">.</span><span class="n">mtr</span><span class="p">))</span> <span class="o">*</span> <span class="p">(</span>
-        <span class="mi">1</span> <span class="o">-</span> <span class="n">iot2</span><span class="o">.</span><span class="n">F</span> <span class="o">-</span> <span class="p">(</span><span class="n">g_z</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">g_z</span><span class="p">))</span>
-    <span class="p">)</span>
-    <span class="c1"># derivation from JJZ analytical solution that doesn&#39;t involved integration</span>
-    <span class="n">eti_beliefs_jjz</span> <span class="o">=</span> <span class="p">(</span><span class="n">g_z</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span>
-        <span class="p">(</span><span class="n">iot2</span><span class="o">.</span><span class="n">theta_z</span> <span class="o">*</span> <span class="p">(</span><span class="n">iot2</span><span class="o">.</span><span class="n">mtr</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">iot2</span><span class="o">.</span><span class="n">mtr</span><span class="p">)))</span>
-        <span class="o">+</span> <span class="p">(</span><span class="n">iot2</span><span class="o">.</span><span class="n">z</span> <span class="o">*</span> <span class="p">(</span><span class="n">iot2</span><span class="o">.</span><span class="n">mtr_prime</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">iot2</span><span class="o">.</span><span class="n">mtr</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span>
-    <span class="p">)</span>
+    
+    <span class="k">if</span> <span class="n">g_z</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">g_z</span> <span class="o">=</span> <span class="n">iot</span><span class="o">.</span><span class="n">g_z</span>
+    
+    <span class="c1"># we solve an ODE of the form f&#39;(z) + P(z)f(z) = Q(z)</span>
+    <span class="n">P_z</span> <span class="o">=</span> <span class="mi">1</span><span class="o">/</span><span class="n">iot</span><span class="o">.</span><span class="n">z</span> <span class="o">+</span> <span class="n">iot</span><span class="o">.</span><span class="n">f_prime</span><span class="o">/</span><span class="n">iot</span><span class="o">.</span><span class="n">f</span> <span class="o">+</span> <span class="n">iot</span><span class="o">.</span><span class="n">mtr_prime</span><span class="o">/</span><span class="p">(</span><span class="n">iot</span><span class="o">.</span><span class="n">mtr</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">iot</span><span class="o">.</span><span class="n">mtr</span><span class="p">))</span>
+    <span class="c1"># integrating factor for ODE: mu(z) * f&#39;(z) + mu(z) * P(z) * f(z) = mu(z) * Q(z)</span>
+    <span class="n">mu_z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">P_z</span><span class="p">))</span>
+    <span class="n">Q_z</span> <span class="o">=</span> <span class="p">(</span><span class="n">g_z</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">iot</span><span class="o">.</span><span class="n">mtr</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">iot</span><span class="o">.</span><span class="n">mtr</span> <span class="o">*</span> <span class="n">iot</span><span class="o">.</span><span class="n">z</span><span class="p">)</span>
+    <span class="c1"># integrate Q(z) * mu(z), as we integrate both sides of the ODE</span>
+    <span class="n">int_mu_Q</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">mu_z</span> <span class="o">*</span> <span class="n">Q_z</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">eti_beliefs_lw</span><span class="p">,</span> <span class="n">eti_beliefs_jjz</span>
+    <span class="n">eti_beliefs</span> <span class="o">=</span> <span class="p">(</span><span class="n">eti_0</span> <span class="o">+</span> <span class="n">int_mu_Q</span><span class="p">)</span> <span class="o">/</span> <span class="n">mu_z</span>
+
+    <span class="k">return</span> <span class="n">eti_beliefs</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">wm</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">weight</span><span class="p">):</span>
@@ -847,8 +864,8 @@ By Jason DeBacker and John P. Ryan
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
-<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+  <script src="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
 
   <footer class="bd-footer">
   </footer>
