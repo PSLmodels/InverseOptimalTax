@@ -204,7 +204,7 @@ class iot_comparison:
         )
         return fig
 
-    def JJZFig4(self, policy="Current Law", var="g_z"):
+    def JJZFig4(self, policy="Current Law", var="g_z", upper_bound=500_000):
         """
         Function to plot a decomposition of the political weights, `g_z`
 
@@ -227,27 +227,27 @@ class iot_comparison:
 
         # g1 with mtr_prime = 0
         g1 = (
-            1
-            + +((df.theta_z * self.iot[k].eti * df.mtr) / (1 - df.mtr))
+            ((df.theta_z * self.iot[k].eti * df.mtr) / (1 - df.mtr))
             + ((self.iot[k].eti * df.z * 0) / (1 - df.mtr) ** 2)
         )
         # g2 with theta_z = 0
         g2 = (
-            1
-            + +((0 * self.iot[k].eti * df.mtr) / (1 - df.mtr))
+            ((0 * self.iot[k].eti * df.mtr) / (1 - df.mtr))
             + ((self.iot[k].eti * df.z * df.mtr_prime) / (1 - df.mtr) ** 2)
         )
         integral = np.trapz(g1, df.z)
-        g1 = g1 / integral
+        # g1 = g1 / integral
         integral = np.trapz(g2, df.z)
+        # g2 = g2 / integral
         plot_df = pd.DataFrame(
             {
                 self.income_measure: df.z,
-                "Overall weight": g_weights,
-                "Tax Base Elasticity": g1,
-                "Nonconstant MTRs": g2,
+                "Overall Weight": g_weights,
+                "Tax Base Elasticity": 1 + g1,
+                "Nonconstant MTRs": 1 + g1 + g2 + np.abs(g1) * (np.sign(g1) != np.sign(g2))
             }
         )
+
         fig = go.Figure()
         # add a line at y = 1
         fig.add_trace(
@@ -265,30 +265,44 @@ class iot_comparison:
         fig.add_trace(
             go.Scatter(
                 x=plot_df[self.income_measure],
-                y=plot_df["Nonconstant MTRs"],
+                y=plot_df["Tax Base Elasticity"],
                 fill="tonexty",  # fill area from prior trace to this one
                 # fill="tozeroy",
                 mode="lines",
-                name="Nonconstant MTRs",
+                fillcolor="rgba(4,40,145,0.5)",
+                name="Tax Base Elasticity",
+            )
+        )
+        fig.add_trace(
+            go.Scatter(
+                x=[
+                    plot_df[self.income_measure].min(),
+                    plot_df[self.income_measure].max(),
+                ],
+                y=[1, 1],
+                mode="lines",
+                line=dict(color="black", width=1, dash="dash"),
+                showlegend=False,
             )
         )
         fig.add_trace(
             go.Scatter(
                 x=plot_df[self.income_measure],
-                y=plot_df["Overall weight"],
-                fill="tonexty",  # fill area between trace0 and trace1
+                y=plot_df["Nonconstant MTRs"],
+                fill="tonexty",  # fill area from prior trace to this one
                 mode="lines",
-                name="Tax Base Elasticity",
+                fillcolor="rgba(229,0,0,0.5)",
+                name="Nonconstant MTRs",
             )
         )
         # Add black line for overall weight
         fig.add_trace(
             go.Scatter(
                 x=plot_df[self.income_measure],
-                y=plot_df["Overall weight"],
+                y=plot_df["Overall Weight"],
                 mode="lines",
-                line=dict(color="black", width=1, dash="solid"),
-                name="Overall weight",
+                line=dict(color="black", width=2, dash="solid"),
+                name="Overall Weight",
                 showlegend=False,
             )
         )
@@ -308,4 +322,5 @@ class iot_comparison:
             xaxis_title=OUTPUT_LABELS[self.income_measure],
             yaxis_title=r"$g_z$",
         )
+        fig.update_xaxes(range=[0, upper_bound])
         return fig
