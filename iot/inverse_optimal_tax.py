@@ -372,7 +372,7 @@ class IOT:
             + ((self.theta_z * self.eti * self.mtr) / (1 - self.mtr))
             + ((self.eti * self.z * self.mtr_prime) / (1 - self.mtr) ** 2)
         )
-        integral = np.trapz(g_z * self.f, self.z)
+        integral = np.trapz(g_z * self.f, self.z) # renormalize to integrate to 1
         g_z = g_z / integral
 
         # use Lockwood and Weinzierl formula, which should be equivalent but using numerical differentiation
@@ -391,10 +391,10 @@ class IOT:
         return g_z, g_z_numerical
 
 
-def find_eti(self, g_z = None, eti_0 = 0.25):
+def find_eti(iot, g_z = None, eti_0 = 0.25):
     """
     This function solves for the ETI that would result in the
-    policy represented via MTRs being consistent with the
+    policy represented via MTRs in IOT being consistent with the
     social welfare function supplied. It solves a first order
     ordinary differential equation.
 
@@ -402,6 +402,7 @@ def find_eti(self, g_z = None, eti_0 = 0.25):
             \varepsilon'(z)\left[\frac{zT'(z)}{1-T'(z)}\right] + \varepsilon(z)\left[\theta_z  \frac{T'(z)}{1-T'(z)} +\frac{zT''(z)}{(1-T'(z))^2}\right]+ (1-g(z))
 
     Args:
+        iot (IOT): instance of the I
         g_z (None or array_like): vector of social welfare weights
         eti_0 (scalar): guess for ETI at z=0
 
@@ -410,13 +411,13 @@ def find_eti(self, g_z = None, eti_0 = 0.25):
     """
     
     if g_z is None:
-        g_z = self.g_z
+        g_z = iot.g_z
     
     # we solve an ODE of the form f'(z) + P(z)f(z) = Q(z)
-    P_z = 1/self.z + self.f_prime/self.f + self.mtr_prime/(self.mtr * (1-self.mtr))
+    P_z = 1/iot.z + iot.f_prime/iot.f + iot.mtr_prime/(iot.mtr * (1-iot.mtr))
     # integrating factor for ODE: mu(z) * f'(z) + mu(z) * P(z) * f(z) = mu(z) * Q(z)
     mu_z = np.exp(np.cumsum(P_z))
-    Q_z = (g_z - 1) * (1 - self.mtr) / (self.mtr * self.z)
+    Q_z = (g_z - 1) * (1 - iot.mtr) / (iot.mtr * iot.z)
     # integrate Q(z) * mu(z), as we integrate both sides of the ODE
     int_mu_Q = np.cumsum(mu_z * Q_z)
 
