@@ -303,7 +303,7 @@ class iot_comparison:
                 mode="lines",
                 line=dict(color="black", width=2, dash="solid"),
                 name="Overall Weight",
-                showlegend=False,
+                showlegend=True,
             )
         )
         # # add a line at y=0
