@@ -383,7 +383,9 @@ class IOT:
             + ((self.theta_z * self.eti * self.mtr) / (1 - self.mtr))
             + ((self.eti * self.z * self.mtr_prime) / (1 - self.mtr) ** 2)
         )
-        integral = np.trapz(g_z * self.f, self.z) # renormalize to integrate to 1
+        integral = np.trapz(
+            g_z * self.f, self.z
+        )  # renormalize to integrate to 1
         g_z = g_z / integral
 
         # use Lockwood and Weinzierl formula, which should be equivalent but using numerical differentiation
@@ -402,7 +404,7 @@ class IOT:
         return g_z, g_z_numerical
 
 
-def find_eti(iot, g_z = None, eti_0 = 0.25):
+def find_eti(iot, g_z=None, eti_0=0.25):
     """
     This function solves for the ETI that would result in the
     policy represented via MTRs in IOT being consistent with the
@@ -420,12 +422,16 @@ def find_eti(iot, g_z = None, eti_0 = 0.25):
     Returns:
         eti_beliefs (array-like): vector of ETI beliefs over z
     """
-    
+
     if g_z is None:
         g_z = iot.g_z
-    
+
     # we solve an ODE of the form f'(z) + P(z)f(z) = Q(z)
-    P_z = 1/iot.z + iot.f_prime/iot.f + iot.mtr_prime/(iot.mtr * (1-iot.mtr))
+    P_z = (
+        1 / iot.z
+        + iot.f_prime / iot.f
+        + iot.mtr_prime / (iot.mtr * (1 - iot.mtr))
+    )
     # integrating factor for ODE: mu(z) * f'(z) + mu(z) * P(z) * f(z) = mu(z) * Q(z)
     mu_z = np.exp(np.cumsum(P_z))
     Q_z = (g_z - 1) * (1 - iot.mtr) / (iot.mtr * iot.z)

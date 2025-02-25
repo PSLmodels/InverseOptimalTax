@@ -226,14 +226,12 @@ class iot_comparison:
             g_weights = df.g_z_numerical
 
         # g1 with mtr_prime = 0
-        g1 = (
-            ((df.theta_z * self.iot[k].eti * df.mtr) / (1 - df.mtr))
-            + ((self.iot[k].eti * df.z * 0) / (1 - df.mtr) ** 2)
+        g1 = ((df.theta_z * self.iot[k].eti * df.mtr) / (1 - df.mtr)) + (
+            (self.iot[k].eti * df.z * 0) / (1 - df.mtr) ** 2
         )
         # g2 with theta_z = 0
-        g2 = (
-            ((0 * self.iot[k].eti * df.mtr) / (1 - df.mtr))
-            + ((self.iot[k].eti * df.z * df.mtr_prime) / (1 - df.mtr) ** 2)
+        g2 = ((0 * self.iot[k].eti * df.mtr) / (1 - df.mtr)) + (
+            (self.iot[k].eti * df.z * df.mtr_prime) / (1 - df.mtr) ** 2
         )
         integral = np.trapz(g1, df.z)
         # g1 = g1 / integral
@@ -244,7 +242,10 @@ class iot_comparison:
                 self.income_measure: df.z,
                 "Overall Weight": g_weights,
                 "Tax Base Elasticity": 1 + g1,
-                "Nonconstant MTRs": 1 + g1 + g2 + np.abs(g1) * (np.sign(g1) != np.sign(g2))
+                "Nonconstant MTRs": 1
+                + g1
+                + g2
+                + np.abs(g1) * (np.sign(g1) != np.sign(g2)),
             }
         )
 
