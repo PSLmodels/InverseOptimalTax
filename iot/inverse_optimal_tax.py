@@ -274,14 +274,21 @@ class IOT:
             )
         elif dist_type == "kde":
             # uses the original full data for kde estimation
+            data2 = data.copy()
+            # for income > 500,000 replace actual values with draws from
+            # a pareto distribution
+            data2.loc[data2[income_measure] > 500_000, income_measure] = st.pareto.rvs(
+                1.16, size=data2.loc[data2[income_measure] > 500_000].shape[0]
+            )
             f_function = st.gaussian_kde(
-                data[income_measure],
-                # bw_method=kde_bw,
+                data2[income_measure],
+                bw_method=kde_bw,
                 weights=data[weight_var],
             )
-            f = f_function.pdf(z_line)
+            f = f_function(z_line)
+            f = f / np.sum(f)  # ensure sum to one
             F = np.cumsum(f)
-            f_prime = np.gradient(f, edge_order=2)
+            f_prime = np.gradient(f, z_line, edge_order=2)
         elif dist_type == "Pln":
 
             def pln_pdf(y, mu, sigma, alpha):
