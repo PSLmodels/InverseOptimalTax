@@ -426,7 +426,12 @@ document.write(`
             <span class="bp">self</span><span class="o">.</span><span class="n">eti</span> <span class="o">=</span> <span class="n">eti_spl</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">z</span><span class="p">)</span>
         <span class="c1"># compute marginal tax rate schedule</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mtr</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mtr_prime</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_mtr_dist</span><span class="p">(</span>
-            <span class="n">data</span><span class="p">,</span> <span class="n">weight_var</span><span class="p">,</span> <span class="n">income_measure</span><span class="p">,</span> <span class="n">mtr_smoother</span><span class="p">,</span> <span class="n">mtr_smooth_param</span><span class="p">,</span> <span class="n">kreg_bw</span>
+            <span class="n">data</span><span class="p">,</span>
+            <span class="n">weight_var</span><span class="p">,</span>
+            <span class="n">income_measure</span><span class="p">,</span>
+            <span class="n">mtr_smoother</span><span class="p">,</span>
+            <span class="n">mtr_smooth_param</span><span class="p">,</span>
+            <span class="n">kreg_bw</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="c1"># compute theta_z, the elasticity of the tax base</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">theta_z</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">+</span> <span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">z</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_prime</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">f</span><span class="p">)</span>
@@ -464,7 +469,13 @@ document.write(`
 <div class="viewcode-block" id="IOT.compute_mtr_dist">
 <a class="viewcode-back" href="../../content/api/inverse_optimal_tax.html#iot.inverse_optimal_tax.IOT.compute_mtr_dist">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">compute_mtr_dist</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">weight_var</span><span class="p">,</span> <span class="n">income_measure</span><span class="p">,</span> <span class="n">mtr_smoother</span><span class="p">,</span> <span class="n">mtr_smooth_param</span><span class="p">,</span> <span class="n">kreg_bw</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">data</span><span class="p">,</span>
+        <span class="n">weight_var</span><span class="p">,</span>
+        <span class="n">income_measure</span><span class="p">,</span>
+        <span class="n">mtr_smoother</span><span class="p">,</span>
+        <span class="n">mtr_smooth_param</span><span class="p">,</span>
+        <span class="n">kreg_bw</span><span class="p">,</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute marginal tax rates over the income distribution and</span>
@@ -731,7 +742,9 @@ document.write(`
             <span class="o">+</span> <span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">theta_z</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">eti</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">mtr</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">mtr</span><span class="p">))</span>
             <span class="o">+</span> <span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">eti</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">z</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">mtr_prime</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">mtr</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
         <span class="p">)</span>
-        <span class="n">integral</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">trapz</span><span class="p">(</span><span class="n">g_z</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">f</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">z</span><span class="p">)</span> <span class="c1"># renormalize to integrate to 1</span>
+        <span class="n">integral</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">trapz</span><span class="p">(</span>
+            <span class="n">g_z</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">f</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">z</span>
+        <span class="p">)</span>  <span class="c1"># renormalize to integrate to 1</span>
         <span class="n">g_z</span> <span class="o">=</span> <span class="n">g_z</span> <span class="o">/</span> <span class="n">integral</span>
 
         <span class="c1"># use Lockwood and Weinzierl formula, which should be equivalent but using numerical differentiation</span>
@@ -752,7 +765,7 @@ document.write(`
 
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">find_eti</span><span class="p">(</span><span class="n">iot</span><span class="p">,</span> <span class="n">g_z</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">eti_0</span> <span class="o">=</span> <span class="mf">0.25</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">find_eti</span><span class="p">(</span><span class="n">iot</span><span class="p">,</span> <span class="n">g_z</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">eti_0</span><span class="o">=</span><span class="mf">0.25</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This function solves for the ETI that would result in the</span>
 <span class="sd">    policy represented via MTRs in IOT being consistent with the</span>
@@ -770,12 +783,16 @@ document.write(`
 <span class="sd">    Returns:</span>
 <span class="sd">        eti_beliefs (array-like): vector of ETI beliefs over z</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    
+
     <span class="k">if</span> <span class="n">g_z</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">g_z</span> <span class="o">=</span> <span class="n">iot</span><span class="o">.</span><span class="n">g_z</span>
-    
+
     <span class="c1"># we solve an ODE of the form f&#39;(z) + P(z)f(z) = Q(z)</span>
-    <span class="n">P_z</span> <span class="o">=</span> <span class="mi">1</span><span class="o">/</span><span class="n">iot</span><span class="o">.</span><span class="n">z</span> <span class="o">+</span> <span class="n">iot</span><span class="o">.</span><span class="n">f_prime</span><span class="o">/</span><span class="n">iot</span><span class="o">.</span><span class="n">f</span> <span class="o">+</span> <span class="n">iot</span><span class="o">.</span><span class="n">mtr_prime</span><span class="o">/</span><span class="p">(</span><span class="n">iot</span><span class="o">.</span><span class="n">mtr</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">iot</span><span class="o">.</span><span class="n">mtr</span><span class="p">))</span>
+    <span class="n">P_z</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="mi">1</span> <span class="o">/</span> <span class="n">iot</span><span class="o">.</span><span class="n">z</span>
+        <span class="o">+</span> <span class="n">iot</span><span class="o">.</span><span class="n">f_prime</span> <span class="o">/</span> <span class="n">iot</span><span class="o">.</span><span class="n">f</span>
+        <span class="o">+</span> <span class="n">iot</span><span class="o">.</span><span class="n">mtr_prime</span> <span class="o">/</span> <span class="p">(</span><span class="n">iot</span><span class="o">.</span><span class="n">mtr</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">iot</span><span class="o">.</span><span class="n">mtr</span><span class="p">))</span>
+    <span class="p">)</span>
     <span class="c1"># integrating factor for ODE: mu(z) * f&#39;(z) + mu(z) * P(z) * f(z) = mu(z) * Q(z)</span>
     <span class="n">mu_z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">P_z</span><span class="p">))</span>
     <span class="n">Q_z</span> <span class="o">=</span> <span class="p">(</span><span class="n">g_z</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">iot</span><span class="o">.</span><span class="n">mtr</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">iot</span><span class="o">.</span><span class="n">mtr</span> <span class="o">*</span> <span class="n">iot</span><span class="o">.</span><span class="n">z</span><span class="p">)</span>
