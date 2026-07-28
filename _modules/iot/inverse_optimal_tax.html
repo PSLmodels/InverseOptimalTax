@@ -29,9 +29,9 @@
 
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=eba8b062" />
-    <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=13237357" />
+    <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=9c3e77be" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
   
@@ -49,7 +49,7 @@
     <script>let toggleHintShow = 'Click to show';</script>
     <script>let toggleHintHide = 'Click to hide';</script>
     <script>let toggleOpenOnPrint = 'true';</script>
-    <script src="../../_static/togglebutton.js?v=4a39c7ea"></script>
+    <script src="../../_static/togglebutton.js?v=b8b12719"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script src="../../_static/design-tabs.js?v=f930bc37"></script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
@@ -348,6 +348,8 @@ document.write(`
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">scipy.stats</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">st</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">scipy</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">scipy.integrate</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">scipy.special</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">statsmodels.nonparametric.kernel_regression</span><span class="w"> </span><span class="kn">import</span> <span class="n">KernelReg</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.interpolate</span><span class="w"> </span><span class="kn">import</span> <span class="n">UnivariateSpline</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.linalg</span><span class="w"> </span><span class="kn">import</span> <span class="n">lstsq</span>
@@ -357,11 +359,8 @@ document.write(`
 <a class="viewcode-back" href="../../content/api/inverse_optimal_tax.html#iot.inverse_optimal_tax.IOT">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">IOT</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Constructor for the IOT class.</span>
-
-<span class="sd">    This IOT class can be used to compute the social welfare weights</span>
-<span class="sd">    across the income distribution given data, tax policy parameters,</span>
-<span class="sd">    and behavioral parameters.</span>
+<span class="sd">    Computes social welfare weights across the income distribution given</span>
+<span class="sd">    data, tax policy parameters, and behavioral parameters.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        data (Pandas DataFrame): micro data representing tax payers.</span>
@@ -369,20 +368,16 @@ document.write(`
 <span class="sd">            weight_var, mtr</span>
 <span class="sd">        income_measure (str): name of income measure from data to use</span>
 <span class="sd">        weight_var (str): name of weight measure from data to use</span>
-<span class="sd">        eti (scalar): compensated elasticity of taxable income</span>
-<span class="sd">            w.r.t. the marginal tax rate</span>
-<span class="sd">        bandwidth (scalar): size of income bins in units of income</span>
-<span class="sd">        lower_bound (scalar): minimum income to consider</span>
-<span class="sd">        upper_bound (scalar): maximum income to consider</span>
+<span class="sd">        eti (scalar or dict): compensated elasticity of taxable income</span>
+<span class="sd">            w.r.t. the marginal tax rate. If a dict, must have keys</span>
+<span class="sd">            ``knot_points`` and ``eti_values`` with equal-length lists.</span>
 <span class="sd">        dist_type (None or str): type of distribution to use if</span>
-<span class="sd">            parametric, if None, then non-parametric bin weights</span>
-<span class="sd">        mtr_smoother (None or str): method used to smooth our mtr</span>
-<span class="sd">            function, if None, then use bin average mtrs</span>
+<span class="sd">            parametric; if None, then non-parametric bin weights</span>
+<span class="sd">        kde_bw (scalar or None): bandwidth for KDE estimation</span>
+<span class="sd">        mtr_smoother (None or str): method used to smooth the mtr</span>
+<span class="sd">            function; if None, then use bin average mtrs</span>
 <span class="sd">        mtr_smooth_param (scalar): parameter for mtr_smoother</span>
 <span class="sd">        kreg_bw (array_like): bandwidth for kernel regression</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        class instance: IOT</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
@@ -409,13 +404,16 @@ document.write(`
             <span class="n">data</span><span class="p">,</span> <span class="n">income_measure</span><span class="p">,</span> <span class="n">weight_var</span><span class="p">,</span> <span class="n">dist_type</span><span class="p">,</span> <span class="n">kde_bw</span>
         <span class="p">)</span>
         <span class="c1"># see if eti is a scalar</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">eti</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">eti</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">eti</span> <span class="o">=</span> <span class="n">eti</span>
         <span class="k">else</span><span class="p">:</span>  <span class="c1"># if not, then it should be a dict with keys containing lists as values</span>
             <span class="c1"># check that same number of ETI values as knot points</span>
             <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">eti</span><span class="p">[</span><span class="s2">&quot;knot_points&quot;</span><span class="p">])</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">eti</span><span class="p">[</span><span class="s2">&quot;eti_values&quot;</span><span class="p">])</span>
             <span class="c1"># want to interpolate across income distribution with knot points</span>
-            <span class="c1"># assume that eti can&#39;t go beyond 1 (or the max of the eti_values provided)</span>
+            <span class="c1"># NOTE: the spline extrapolates (linearly for k=1, cubically</span>
+            <span class="c1"># for k=3) outside the range of knot_points; values are not</span>
+            <span class="c1"># clipped, so verify the fitted eti is sensible at the</span>
+            <span class="c1"># extremes of the income grid</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">eti</span><span class="p">[</span><span class="s2">&quot;knot_points&quot;</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">:</span>
                 <span class="n">spline_order</span> <span class="o">=</span> <span class="mi">3</span>
             <span class="k">else</span><span class="p">:</span>
@@ -442,10 +440,7 @@ document.write(`
 <a class="viewcode-back" href="../../content/api/inverse_optimal_tax.html#iot.inverse_optimal_tax.IOT.df">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">df</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Return all vector attributes in a DataFrame format</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            None</span>
+<span class="sd">        Return all vector attributes in a DataFrame format.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            df (Pandas DataFrame): DataFrame with all inputs/outputs</span>
@@ -486,8 +481,9 @@ document.write(`
 <span class="sd">                Must include the following columns: income_measure,</span>
 <span class="sd">                weight_var, mtr</span>
 <span class="sd">            weight_var (str): name of weight measure from data to use</span>
-<span class="sd">            mtr_smoother (None or str): method used to smooth our mtr</span>
-<span class="sd">            function, if None, then use bin average mtrs</span>
+<span class="sd">            income_measure (str): name of income measure from data to use</span>
+<span class="sd">            mtr_smoother (None or str): method used to smooth the mtr</span>
+<span class="sd">                function; if None, then use bin average mtrs</span>
 <span class="sd">            mtr_smooth_param (scalar): parameter for mtr_smoother</span>
 <span class="sd">            kreg_bw (array_like): bandwidth for kernel regression</span>
 
@@ -582,11 +578,10 @@ document.write(`
 
 <span class="sd">        Returns:</span>
 <span class="sd">            tuple:</span>
-<span class="sd">                * z (array_like): mean income at each bin in the income</span>
-<span class="sd">                    distribution</span>
-<span class="sd">                * f (array_like): density for income bin z</span>
-<span class="sd">                * f_prime (array_like): slope of the density function for</span>
-<span class="sd">                    income bin z</span>
+<span class="sd">                * z (array_like): income grid points</span>
+<span class="sd">                * F (array_like): cumulative distribution function at each z</span>
+<span class="sd">                * f (array_like): density at each z</span>
+<span class="sd">                * f_prime (array_like): slope of the density function at each z</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">z_line</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">1000000</span><span class="p">,</span> <span class="mi">100000</span><span class="p">)</span>
         <span class="c1"># drop zero income observations</span>
@@ -636,16 +631,25 @@ document.write(`
                 <span class="n">weights</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="n">weight_var</span><span class="p">],</span>
             <span class="p">)</span>
             <span class="n">f</span> <span class="o">=</span> <span class="n">f_function</span><span class="o">.</span><span class="n">pdf</span><span class="p">(</span><span class="n">z_line</span><span class="p">)</span>
-            <span class="n">F</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
-            <span class="n">f_prime</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">edge_order</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+            <span class="c1"># CDF via cumulative trapezoid integration of the density</span>
+            <span class="c1"># (np.cumsum(f) alone ignores the grid spacing dz)</span>
+            <span class="n">F</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">integrate</span><span class="o">.</span><span class="n">cumulative_trapezoid</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">z_line</span><span class="p">,</span> <span class="n">initial</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">f_prime</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">z_line</span><span class="p">,</span> <span class="n">edge_order</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">dist_type</span> <span class="o">==</span> <span class="s2">&quot;Pln&quot;</span><span class="p">:</span>
+
+            <span class="k">def</span><span class="w"> </span><span class="nf">mills_ratio</span><span class="p">(</span><span class="n">t</span><span class="p">):</span>
+                <span class="c1"># R(t) = (1 - Phi(t)) / phi(t), computed with the</span>
+                <span class="c1"># scaled complementary error function for numerical</span>
+                <span class="c1"># stability. The naive ratio underflows to 0/0 in the</span>
+                <span class="c1"># tails, which can zero out the fitted density and</span>
+                <span class="c1"># poison downstream calculations (theta_z, g_z) with</span>
+                <span class="c1"># infs/NaNs.</span>
+                <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">scipy</span><span class="o">.</span><span class="n">special</span><span class="o">.</span><span class="n">erfcx</span><span class="p">(</span><span class="n">t</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span>
 
             <span class="k">def</span><span class="w"> </span><span class="nf">pln_pdf</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">alpha</span><span class="p">):</span>
                 <span class="n">x1</span> <span class="o">=</span> <span class="n">alpha</span> <span class="o">*</span> <span class="n">sigma</span> <span class="o">-</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="o">-</span> <span class="n">mu</span><span class="p">)</span> <span class="o">/</span> <span class="n">sigma</span>
                 <span class="n">phi</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">norm</span><span class="o">.</span><span class="n">pdf</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="o">-</span> <span class="n">mu</span><span class="p">)</span> <span class="o">/</span> <span class="n">sigma</span><span class="p">)</span>
-                <span class="n">R</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">st</span><span class="o">.</span><span class="n">norm</span><span class="o">.</span><span class="n">cdf</span><span class="p">(</span><span class="n">x1</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span><span class="n">st</span><span class="o">.</span><span class="n">norm</span><span class="o">.</span><span class="n">pdf</span><span class="p">(</span><span class="n">x1</span><span class="p">)</span> <span class="o">+</span> <span class="mf">1e-15</span><span class="p">)</span>
-                <span class="c1"># 1e-15 to avoid division by zero</span>
-                <span class="n">pdf</span> <span class="o">=</span> <span class="n">alpha</span> <span class="o">/</span> <span class="n">y</span> <span class="o">*</span> <span class="n">phi</span> <span class="o">*</span> <span class="n">R</span>
+                <span class="n">pdf</span> <span class="o">=</span> <span class="n">alpha</span> <span class="o">/</span> <span class="n">y</span> <span class="o">*</span> <span class="n">phi</span> <span class="o">*</span> <span class="n">mills_ratio</span><span class="p">(</span><span class="n">x1</span><span class="p">)</span>
                 <span class="k">return</span> <span class="n">pdf</span>
 
             <span class="k">def</span><span class="w"> </span><span class="nf">neg_weighted_log_likelihood</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">weights</span><span class="p">):</span>
@@ -686,18 +690,14 @@ document.write(`
 
             <span class="k">def</span><span class="w"> </span><span class="nf">pln_cdf</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">alpha</span><span class="p">):</span>
                 <span class="n">x1</span> <span class="o">=</span> <span class="n">alpha</span> <span class="o">*</span> <span class="n">sigma</span> <span class="o">-</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="o">-</span> <span class="n">mu</span><span class="p">)</span> <span class="o">/</span> <span class="n">sigma</span>
-                <span class="n">R</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">st</span><span class="o">.</span><span class="n">norm</span><span class="o">.</span><span class="n">cdf</span><span class="p">(</span><span class="n">x1</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span><span class="n">st</span><span class="o">.</span><span class="n">norm</span><span class="o">.</span><span class="n">pdf</span><span class="p">(</span><span class="n">x1</span><span class="p">)</span> <span class="o">+</span> <span class="mf">1e-12</span><span class="p">)</span>
-                <span class="n">CDF</span> <span class="o">=</span> <span class="p">(</span>
-                    <span class="n">st</span><span class="o">.</span><span class="n">norm</span><span class="o">.</span><span class="n">cdf</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="o">-</span> <span class="n">mu</span><span class="p">)</span> <span class="o">/</span> <span class="n">sigma</span><span class="p">)</span>
-                    <span class="o">-</span> <span class="n">st</span><span class="o">.</span><span class="n">norm</span><span class="o">.</span><span class="n">pdf</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="o">-</span> <span class="n">mu</span><span class="p">)</span> <span class="o">/</span> <span class="n">sigma</span><span class="p">)</span> <span class="o">*</span> <span class="n">R</span>
-                <span class="p">)</span>
+                <span class="n">CDF</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">norm</span><span class="o">.</span><span class="n">cdf</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="o">-</span> <span class="n">mu</span><span class="p">)</span> <span class="o">/</span> <span class="n">sigma</span><span class="p">)</span> <span class="o">-</span> <span class="n">st</span><span class="o">.</span><span class="n">norm</span><span class="o">.</span><span class="n">pdf</span><span class="p">(</span>
+                    <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="o">-</span> <span class="n">mu</span><span class="p">)</span> <span class="o">/</span> <span class="n">sigma</span>
+                <span class="p">)</span> <span class="o">*</span> <span class="n">mills_ratio</span><span class="p">(</span><span class="n">x1</span><span class="p">)</span>
                 <span class="k">return</span> <span class="n">CDF</span>
 
             <span class="k">def</span><span class="w"> </span><span class="nf">pln_dpdf</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">alpha</span><span class="p">):</span>
                 <span class="n">x</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="o">-</span> <span class="n">mu</span><span class="p">)</span> <span class="o">/</span> <span class="n">sigma</span>
-                <span class="n">R</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">st</span><span class="o">.</span><span class="n">norm</span><span class="o">.</span><span class="n">cdf</span><span class="p">(</span><span class="n">alpha</span> <span class="o">*</span> <span class="n">sigma</span> <span class="o">-</span> <span class="n">x</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span>
-                    <span class="n">st</span><span class="o">.</span><span class="n">norm</span><span class="o">.</span><span class="n">pdf</span><span class="p">(</span><span class="n">alpha</span> <span class="o">*</span> <span class="n">sigma</span> <span class="o">-</span> <span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="mf">1e-15</span>
-                <span class="p">)</span>
+                <span class="n">R</span> <span class="o">=</span> <span class="n">mills_ratio</span><span class="p">(</span><span class="n">alpha</span> <span class="o">*</span> <span class="n">sigma</span> <span class="o">-</span> <span class="n">x</span><span class="p">)</span>
                 <span class="n">left</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">x</span> <span class="o">/</span> <span class="n">sigma</span><span class="p">)</span> <span class="o">*</span> <span class="n">pln_pdf</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">alpha</span><span class="p">)</span>
                 <span class="n">right</span> <span class="o">=</span> <span class="p">(</span>
                     <span class="n">alpha</span>
@@ -721,21 +721,21 @@ document.write(`
 <a class="viewcode-back" href="../../content/api/inverse_optimal_tax.html#iot.inverse_optimal_tax.IOT.sw_weights">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">sw_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Returns the social welfare weights for a given tax policy.</span>
+<span class="sd">        Return the social welfare weights for a given tax policy.</span>
 
 <span class="sd">        See Jacobs, Jongen, and Zoutman (2017) and</span>
 <span class="sd">        Lockwood and Weinzierl (2016) for details.</span>
 
 <span class="sd">        .. math::</span>
-<span class="sd">            g_{z} = 1 + \theta_z \varepsilon^{c}\frac{T&#39;(z)}{(1-T&#39;(z))} +</span>
-<span class="sd">            \varepsilon^{c}\frac{zT&#39;&#39;(z)}{(1-T&#39;&#39;(z))^{2}}</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            None</span>
+<span class="sd">            g_{z} = 1 + \theta_z \varepsilon^{c}\frac{T&#39;(z)}{1-T&#39;(z)} +</span>
+<span class="sd">            \varepsilon^{c}\frac{zT&#39;&#39;(z)}{(1-T&#39;(z))^{2}}</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            array_like: vector of social welfare weights across</span>
-<span class="sd">            the income distribution</span>
+<span class="sd">            tuple:</span>
+<span class="sd">                * g_z (array_like): social welfare weights via analytical</span>
+<span class="sd">                    formula</span>
+<span class="sd">                * g_z_numerical (array_like): social welfare weights via</span>
+<span class="sd">                    the Lockwood and Weinzierl numerical formula</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">g_z</span> <span class="o">=</span> <span class="p">(</span>
             <span class="mi">1</span>
@@ -753,7 +753,9 @@ document.write(`
             <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">F</span>
             <span class="o">-</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mtr</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">mtr</span><span class="p">))</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">eti</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">z</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">f</span>
         <span class="p">)</span>
-        <span class="n">d_dz_bracket</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">bracket_term</span><span class="p">,</span> <span class="n">edge_order</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        <span class="c1"># differentiate wrt z (must pass self.z; np.gradient otherwise</span>
+        <span class="c1"># assumes unit spacing and scales the result by 1/dz)</span>
+        <span class="n">d_dz_bracket</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">bracket_term</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">z</span><span class="p">,</span> <span class="n">edge_order</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
         <span class="c1"># d_dz_bracket = np.diff(bracket_term) / np.diff(self.z)</span>
         <span class="c1"># d_dz_bracket = np.append(d_dz_bracket, d_dz_bracket[-1])</span>
         <span class="n">g_z_numerical</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">f</span><span class="p">)</span> <span class="o">*</span> <span class="n">d_dz_bracket</span>
@@ -765,7 +767,7 @@ document.write(`
 
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">find_eti</span><span class="p">(</span><span class="n">iot</span><span class="p">,</span> <span class="n">g_z</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">eti_0</span><span class="o">=</span><span class="mf">0.25</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">find_eti</span><span class="p">(</span><span class="n">iot</span><span class="p">,</span> <span class="n">g_z</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">eti_0</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">boundary</span><span class="o">=</span><span class="s2">&quot;z0&quot;</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This function solves for the ETI that would result in the</span>
 <span class="sd">    policy represented via MTRs in IOT being consistent with the</span>
@@ -776,30 +778,69 @@ document.write(`
 <span class="sd">            \varepsilon&#39;(z)\left[\frac{zT&#39;(z)}{1-T&#39;(z)}\right] + \varepsilon(z)\left[\theta_z  \frac{T&#39;(z)}{1-T&#39;(z)} +\frac{zT&#39;&#39;(z)}{(1-T&#39;(z))^2}\right]+ (1-g(z))</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        iot (IOT): instance of the I</span>
+<span class="sd">        iot (IOT): instance of the IOT class</span>
 <span class="sd">        g_z (None or array_like): vector of social welfare weights</span>
-<span class="sd">        eti_0 (scalar): guess for ETI at z=0</span>
+<span class="sd">        eti_0 (scalar): guess for ETI at z=0 (used when boundary=&quot;z0&quot;)</span>
+<span class="sd">        boundary (str): &quot;z0&quot; to use the initial condition at z=0</span>
+<span class="sd">            (solves the ODE with eti_0), or &quot;inf&quot; to use the</span>
+<span class="sd">            transversality condition that</span>
+<span class="sd">            epsilon(z)*T&#39;(z)/(1-T&#39;(z))*z*f(z) -&gt; 0 as z -&gt; inf.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        eti_beliefs (array-like): vector of ETI beliefs over z</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-
     <span class="k">if</span> <span class="n">g_z</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">g_z</span> <span class="o">=</span> <span class="n">iot</span><span class="o">.</span><span class="n">g_z</span>
 
-    <span class="c1"># we solve an ODE of the form f&#39;(z) + P(z)f(z) = Q(z)</span>
-    <span class="n">P_z</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="mi">1</span> <span class="o">/</span> <span class="n">iot</span><span class="o">.</span><span class="n">z</span>
-        <span class="o">+</span> <span class="n">iot</span><span class="o">.</span><span class="n">f_prime</span> <span class="o">/</span> <span class="n">iot</span><span class="o">.</span><span class="n">f</span>
-        <span class="o">+</span> <span class="n">iot</span><span class="o">.</span><span class="n">mtr_prime</span> <span class="o">/</span> <span class="p">(</span><span class="n">iot</span><span class="o">.</span><span class="n">mtr</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">iot</span><span class="o">.</span><span class="n">mtr</span><span class="p">))</span>
-    <span class="p">)</span>
-    <span class="c1"># integrating factor for ODE: mu(z) * f&#39;(z) + mu(z) * P(z) * f(z) = mu(z) * Q(z)</span>
-    <span class="n">mu_z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">P_z</span><span class="p">))</span>
-    <span class="n">Q_z</span> <span class="o">=</span> <span class="p">(</span><span class="n">g_z</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">iot</span><span class="o">.</span><span class="n">mtr</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">iot</span><span class="o">.</span><span class="n">mtr</span> <span class="o">*</span> <span class="n">iot</span><span class="o">.</span><span class="n">z</span><span class="p">)</span>
-    <span class="c1"># integrate Q(z) * mu(z), as we integrate both sides of the ODE</span>
-    <span class="n">int_mu_Q</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">mu_z</span> <span class="o">*</span> <span class="n">Q_z</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">boundary</span> <span class="o">==</span> <span class="s2">&quot;z0&quot;</span><span class="p">:</span>
+        <span class="c1"># Original ODE approach with boundary condition at the lowest</span>
+        <span class="c1"># grid point z_min (so that eti(z_min) = eti_0 exactly).</span>
+        <span class="c1"># Use cumulative trapezoid integration starting at 0 rather</span>
+        <span class="c1"># than np.cumsum, which is both less accurate and makes the</span>
+        <span class="c1"># integrating factor mu(z_min) != 1 (shifting the boundary</span>
+        <span class="c1"># condition off of eti_0).</span>
+        <span class="n">P_z</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="mi">1</span> <span class="o">/</span> <span class="n">iot</span><span class="o">.</span><span class="n">z</span>
+            <span class="o">+</span> <span class="n">iot</span><span class="o">.</span><span class="n">f_prime</span> <span class="o">/</span> <span class="n">iot</span><span class="o">.</span><span class="n">f</span>
+            <span class="o">+</span> <span class="n">iot</span><span class="o">.</span><span class="n">mtr_prime</span> <span class="o">/</span> <span class="p">(</span><span class="n">iot</span><span class="o">.</span><span class="n">mtr</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">iot</span><span class="o">.</span><span class="n">mtr</span><span class="p">))</span>
+        <span class="p">)</span>
+        <span class="n">mu_z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span>
+            <span class="n">scipy</span><span class="o">.</span><span class="n">integrate</span><span class="o">.</span><span class="n">cumulative_trapezoid</span><span class="p">(</span><span class="n">P_z</span><span class="p">,</span> <span class="n">iot</span><span class="o">.</span><span class="n">z</span><span class="p">,</span> <span class="n">initial</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">Q_z</span> <span class="o">=</span> <span class="p">(</span><span class="n">g_z</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">iot</span><span class="o">.</span><span class="n">mtr</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">iot</span><span class="o">.</span><span class="n">mtr</span> <span class="o">*</span> <span class="n">iot</span><span class="o">.</span><span class="n">z</span><span class="p">)</span>
+        <span class="n">int_mu_Q</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">integrate</span><span class="o">.</span><span class="n">cumulative_trapezoid</span><span class="p">(</span>
+            <span class="n">mu_z</span> <span class="o">*</span> <span class="n">Q_z</span><span class="p">,</span> <span class="n">iot</span><span class="o">.</span><span class="n">z</span><span class="p">,</span> <span class="n">initial</span><span class="o">=</span><span class="mi">0</span>
+        <span class="p">)</span>
+        <span class="n">eti_beliefs</span> <span class="o">=</span> <span class="p">(</span><span class="n">eti_0</span> <span class="o">+</span> <span class="n">int_mu_Q</span><span class="p">)</span> <span class="o">/</span> <span class="n">mu_z</span>
 
-    <span class="n">eti_beliefs</span> <span class="o">=</span> <span class="p">(</span><span class="n">eti_0</span> <span class="o">+</span> <span class="n">int_mu_Q</span><span class="p">)</span> <span class="o">/</span> <span class="n">mu_z</span>
+    <span class="k">elif</span> <span class="n">boundary</span> <span class="o">==</span> <span class="s2">&quot;inf&quot;</span><span class="p">:</span>
+        <span class="c1"># Transversality condition: eps(z)*T&#39;/(1-T&#39;)*z*f -&gt; 0 as z -&gt; inf</span>
+        <span class="c1"># eps(z) = [(1-T&#39;(z))/T&#39;(z)] * [1/(z*f(z))] * int_z^inf (1 - g(zt)) f(zt) dzt</span>
+        <span class="c1"># CAUTION: the integral is truncated at the top of the income</span>
+        <span class="c1"># grid (z_max), so the mass of int_{z_max}^inf (1-g) f dz is</span>
+        <span class="c1"># dropped. This biases the implied eti toward zero as z</span>
+        <span class="c1"># approaches z_max (verified via a self-consistency test in</span>
+        <span class="c1"># which passing the model&#39;s own raw g_z should return the</span>
+        <span class="c1"># constant eti used to generate it). Interpret results near</span>
+        <span class="c1"># the top of the grid, and comparisons between the two</span>
+        <span class="c1"># boundary conditions, with this truncation bias in mind.</span>
+        <span class="n">integrand</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">g_z</span><span class="p">)</span> <span class="o">*</span> <span class="n">iot</span><span class="o">.</span><span class="n">f</span>
+        <span class="c1"># Reverse cumulative integral: int_z^inf = int_0^inf - int_0^z</span>
+        <span class="c1"># Compute using reverse cumsum of trapezoid contributions</span>
+        <span class="c1"># Use cumulative_trapezoid from the right</span>
+        <span class="n">dz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">iot</span><span class="o">.</span><span class="n">z</span><span class="p">)</span>
+        <span class="c1"># Trapezoidal contributions for each interval</span>
+        <span class="n">trap_contributions</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">integrand</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">integrand</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span> <span class="o">*</span> <span class="n">dz</span>
+        <span class="c1"># Reverse cumulative sum to get integral from z to z_max</span>
+        <span class="n">rev_cumsum</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flip</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">flip</span><span class="p">(</span><span class="n">trap_contributions</span><span class="p">)))</span>
+        <span class="c1"># Append 0 for the last point (integral from z_max to inf ~ 0)</span>
+        <span class="n">tail_integral</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rev_cumsum</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+
+        <span class="n">eti_beliefs</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="p">((</span><span class="mi">1</span> <span class="o">-</span> <span class="n">iot</span><span class="o">.</span><span class="n">mtr</span><span class="p">)</span> <span class="o">/</span> <span class="n">iot</span><span class="o">.</span><span class="n">mtr</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="n">iot</span><span class="o">.</span><span class="n">z</span> <span class="o">*</span> <span class="n">iot</span><span class="o">.</span><span class="n">f</span><span class="p">))</span> <span class="o">*</span> <span class="n">tail_integral</span>
+        <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;boundary must be &#39;z0&#39; or &#39;inf&#39;, got &#39;</span><span class="si">{</span><span class="n">boundary</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">eti_beliefs</span>
 
